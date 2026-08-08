@@ -2,41 +2,25 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
 
+// Ссылки на соцсети под отзывами пока не показываем: Instagram есть только
+// у Натальи, и одна ссылка на двоих смотрелась бы странно. Вернём, когда
+// заказчица пришлёт аккаунт Ильи.
 const reviews = [
   {
     id: 1,
-    name: "Натали Миронова",
-    // ЗАГЛУШКА: личный Instagram Натальи нам неизвестен. Раньше здесь стояла ссылка
-    // на аккаунт самого клуба — это неверно. Запросить у заказчицы и вписать сюда.
-    instagram: null,
-    instagramUrl: null,
-    // ЗАГЛУШКА: прежняя цитата принадлежала заказчице и была про сайт, а не про клуб.
-    // Текстовой расшифровки видеоотзыва у нас нет — запросить у заказчицы.
-    quote: null,
+    name: "Наталья Миронова",
+    role: "резидент и вокалистка клуба",
     videoUrl: "./videos/natali_review.mp4",
     poster: "./videos/natali_review_poster.jpg"
   },
   {
     id: 2,
-    // ЗАГЛУШКА: автор видеоотзыва от 8 августа не подписан. Имя, Instagram и текстовую
-    // цитату запросить у заказчицы. Ничего не выдумывать — заменить эти три поля.
-    name: "Имя уточняется",
-    instagram: null,
-    instagramUrl: null,
-    quote: null,
+    name: "Илья Садыгов",
+    role: "гость вечеров и участник открытых микрофонов",
     videoUrl: "./videos/guest_review.mp4",
     poster: "./videos/guest_review_poster.jpg"
   }
 ];
-
-// Локальная иконка: в lucide-react брендовых иконок нет.
-const InstagramIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <rect x="2" y="2" width="20" height="20" rx="5" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-  </svg>
-);
 
 const VideoReview = ({ review }) => (
   <div className="glass-card flex flex-col h-full relative overflow-hidden">
@@ -52,30 +36,10 @@ const VideoReview = ({ review }) => (
     </div>
 
     <div className="p-6 flex flex-col flex-grow bg-poet-card/90">
-      {review.quote && (
-        <>
-          <Quote className="w-6 h-6 text-poet-accent/30 mb-4" />
-          <p className="text-poet-light/90 italic mb-6 flex-grow font-serif text-sm leading-relaxed">
-            "{review.quote}"
-          </p>
-        </>
-      )}
-
-      <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-auto">
-        <div>
-          <h5 className="font-medium text-white text-sm">{review.name}</h5>
-          {review.instagramUrl && (
-            <a
-              href={review.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-poet-accent hover:text-white transition-colors mt-2"
-            >
-              <InstagramIcon className="w-3.5 h-3.5" />
-              <span className="text-xs font-medium tracking-wide">{review.instagram}</span>
-            </a>
-          )}
-        </div>
+      <Quote className="w-6 h-6 text-poet-accent/30 mb-4" />
+      <div className="mt-auto">
+        <h5 className="font-medium text-white text-sm">{review.name}</h5>
+        <p className="text-poet-accent text-xs leading-snug mt-1">{review.role}</p>
       </div>
     </div>
   </div>
