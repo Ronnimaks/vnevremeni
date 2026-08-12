@@ -7,25 +7,29 @@ const formats = [
     title: "Открытые микрофоны",
     description: "Площадка для новых голосов: поэты и музыканты могут выступить, получить отклик и сделать первый шаг на сцену. Проводим особые форматы: «Золотой открытый микрофон» и тематические баттлы с призами.",
     icon: Mic2,
-    image: "./images/review_1.jpg" // placeholders for now, maybe remove images and use icons
+    image: "./images/gallery/evening_09_thumb.webp",
+    imageAlt: "Молодой автор читает свои строки с листа у микрофона"
   },
   {
     title: "Резидентские вечера",
     description: "Выступления постоянных участников клуба, где поэзия и музыка сплетаются в единую программу: мелодекламации, авторские песни, каверы на стихи резидентов.",
     icon: Music,
-    image: "./images/review_2.jpg"
+    image: "./images/gallery/evening_15_thumb.webp",
+    imageAlt: "Певица у микрофонной стойки на сцене клуба"
   },
   {
     title: "Коллаборации и гастроли",
     description: "Сотрудничаем с другими творческими сообществами и устраиваем выездные мероприятия, расширяя поэтическую карту и объединяя авторов из разных городов.",
     icon: Map,
-    image: "./images/review_3.jpg"
+    image: "./images/gallery/evening_04_thumb.webp",
+    imageAlt: "Общее фото участников вечера у баннера клуба"
   },
   {
     title: "Спецпроекты и партнёрства",
     description: "Совместные вечера с брендами, участие в фестивалях, создание уникальных форматов, где поэзия становится частью крупных городских событий.",
     icon: Star,
-    image: "./images/event_3.jpg"
+    image: "./images/gallery/evening_01_thumb.webp",
+    imageAlt: "Общий план зала: сцена, гирлянды и полные столики во время выступления"
   }
 ];
 
@@ -52,7 +56,8 @@ export default function Formats() {
                 <div className="absolute inset-0 bg-poet-accent/20 mix-blend-multiply z-10 group-hover:bg-transparent transition-colors duration-500" />
                 <img 
                   src={format.image} 
-                  alt={format.title} 
+                  alt={format.imageAlt}
+                  loading="lazy"
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transform group-hover:scale-105 transition-all duration-700"
                 />
               </div>

@@ -9,7 +9,7 @@ const reviews = [
   {
     id: 1,
     name: "Наталья Миронова",
-    role: "резидент и вокалистка клуба",
+    role: "вокалистка, резидент клуба",
     videoUrl: "./videos/natali_review.mp4",
     poster: "./videos/natali_review_poster.jpg"
   },
