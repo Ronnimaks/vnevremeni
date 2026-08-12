@@ -26,7 +26,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
         {/* Logo */}
         <a href="#" className="flex items-center gap-3 group">
-          <img src="./images/logo.jpg" alt="Вне времени логотип" className="w-10 h-10 rounded-full object-cover border border-poet-accent/30 group-hover:scale-105 transition-transform" />
+          <img src="./images/logo.webp" alt="Логотип клуба «Вне времени»" className="w-11 h-11 object-contain group-hover:scale-105 transition-transform" />
           <span className="font-serif text-xl md:text-2xl font-bold tracking-wider text-poet-light">ВНЕ ВРЕМЕНИ</span>
         </a>
 
