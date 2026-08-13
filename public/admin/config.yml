@@ -1,0 +1,161 @@
+# Настройки личного кабинета (Sveltia CMS).
+#
+# base_url — адрес службы входа через GitHub (Worker sveltia-cms-auth).
+# Пока он не развёрнут и не вписан сюда, кабинет не сможет пустить внутрь.
+
+backend:
+  name: github
+  repo: Ronnimaks/vnevremeni
+  branch: main
+  base_url: https://ЗАМЕНИТЬ-НА-АДРЕС-СЛУЖБЫ-ВХОДА.workers.dev
+
+# Куда кабинет кладёт загруженные картинки и как на них ссылается сайт
+media_folder: public/images/events
+public_folder: ./images/events
+
+publish_mode: simple
+site_url: https://ronnimaks.github.io/vnevremeni/
+locale: ru
+
+collections:
+  - name: events
+    label: Афиша
+    files:
+      - name: events_list
+        label: Ближайшие вечера
+        file: src/data/events.json
+        format: json
+        description: >-
+          Прошедшие вечера убирать не нужно — они пропадают с сайта сами
+          на следующий день после даты.
+        fields:
+          - name: events
+            label: Вечера
+            label_singular: Вечер
+            widget: list
+            summary: '{{fields.date}} — {{fields.title}}'
+            fields:
+              - name: title
+                label: Название вечера
+                widget: string
+
+              - name: subtitle
+                label: Подзаголовок
+                widget: string
+                required: false
+                hint: Например, кто выступает или размер призового фонда
+
+              - name: date
+                label: Дата
+                widget: datetime
+                format: 'YYYY-MM-DD'
+                date_format: 'DD.MM.YYYY'
+                time_format: false
+
+              - name: time
+                label: Начало
+                widget: string
+                default: '19:00'
+                pattern: ['^\d{2}:\d{2}$', 'Впишите время в виде 19:00']
+
+              - name: gathering
+                label: Сбор гостей
+                widget: string
+                required: false
+                pattern: ['^(\d{2}:\d{2})?$', 'Впишите время в виде 18:00 или оставьте пустым']
+
+              - name: venue
+                label: Площадка
+                widget: string
+                hint: Название заведения, например «Караоке-клуб „Соло“»
+
+              - name: address
+                label: Адрес
+                widget: string
+
+              - name: metro
+                label: Метро
+                widget: string
+                required: false
+
+              - name: price
+                label: Цена билета, ₽
+                widget: number
+                value_type: int
+                min: 0
+                hint: Только число, без знака рубля
+
+              - name: note
+                label: Примечание
+                widget: string
+                required: false
+                hint: Например, минимальный заказ в заведении
+
+              - name: description
+                label: Описание
+                widget: text
+
+              - name: lineup
+                label: Участники
+                widget: list
+                required: false
+                field:
+                  name: person
+                  label: Имя
+                  widget: string
+
+              - name: poster
+                label: Афиша
+                widget: image
+                required: false
+                hint: Вертикальная картинка. Если её нет, карточка покажется без афиши
+
+              - name: posterAlt
+                label: Описание афиши для незрячих
+                widget: string
+                required: false
+                hint: Одна фраза о том, что изображено. Её читают экранные дикторы
+
+              - name: id
+                label: Служебный код
+                widget: string
+                hint: Латиницей, без пробелов. Например anesteziya-2026-08-27
+
+  - name: payment
+    label: Оплата
+    files:
+      - name: payment_details
+        label: Реквизиты для оплаты
+        file: src/data/payment.json
+        format: json
+        description: Эти данные гость видит на экране оплаты.
+        fields:
+          - name: phone
+            label: Номер телефона (как показывать)
+            widget: string
+            hint: 'В виде +7 916 178-04-58'
+
+          - name: phoneDigits
+            label: Номер телефона (для копирования)
+            widget: string
+            hint: Только цифры, например 79161780458
+
+          - name: bank
+            label: Банк получателя
+            widget: string
+
+          - name: recipient
+            label: Имя получателя
+            widget: string
+            hint: Как оно показывается в приложении банка при переводе
+
+          - name: qrImage
+            label: QR-код для оплаты
+            widget: image
+            required: false
+            hint: Появится на экране оплаты, только если загрузить картинку
+
+          - name: qrAlt
+            label: Описание QR-кода для незрячих
+            widget: string
+            required: false

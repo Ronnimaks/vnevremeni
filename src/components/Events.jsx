@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Clock, Users, Info, X } from 'lucide-react';
+// Файл лежит объектом с ключом events, а не голым списком: этого требует
+// личный кабинет — он умеет править только именованные поля файла.
 import eventsData from '../data/events.json';
 
 const MONTHS = [
@@ -58,7 +60,7 @@ export default function Events({ onBook }) {
   const [poster, setPoster] = useState(null);
 
   const upcoming = useMemo(
-    () => eventsData.filter(item => isUpcoming(item.date)).sort((a, b) => a.date.localeCompare(b.date)),
+    () => (eventsData.events || []).filter(item => isUpcoming(item.date)).sort((a, b) => a.date.localeCompare(b.date)),
     []
   );
 
