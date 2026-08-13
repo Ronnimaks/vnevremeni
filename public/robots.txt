@@ -1,0 +1,8 @@
+# Сайт музыкально-поэтического клуба «Вне времени»
+# После покупки домена заменить адрес карты сайта на новый.
+
+User-agent: *
+Allow: /
+Disallow: /privacy.html
+
+Sitemap: https://ronnimaks.github.io/vnevremeni/sitemap.xml

@@ -20,6 +20,40 @@ const isUpcoming = (iso) => {
   return new Date(year, month - 1, day, 23, 59, 59) >= new Date();
 };
 
+// Разметка афиши для поисковиков: события могут показаться в выдаче
+// карточкой с датой и адресом, а не просто ссылкой на сайт.
+const buildEventSchema = (events) => JSON.stringify(
+  events.map(event => ({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    startDate: `${event.date}T${event.time || '19:00'}:00+03:00`,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    description: event.description,
+    location: {
+      '@type': 'Place',
+      name: event.venue,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: event.address,
+        addressLocality: 'Москва',
+        addressCountry: 'RU'
+      }
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: 'Вне времени'
+    },
+    offers: {
+      '@type': 'Offer',
+      price: event.price,
+      priceCurrency: 'RUB',
+      availability: 'https://schema.org/InStock'
+    }
+  }))
+);
+
 export default function Events({ onBook }) {
   const [poster, setPoster] = useState(null);
 
@@ -37,6 +71,9 @@ export default function Events({ onBook }) {
 
   return (
     <section id="events" className="py-24 bg-poet-dark relative">
+      {upcoming.length > 0 && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: buildEventSchema(upcoming) }} />
+      )}
       <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-2xl mb-12">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Карта сайта. Сайт одностраничный, поэтому запись одна.
+     После покупки домена заменить адрес и обновить дату. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://ronnimaks.github.io/vnevremeni/</loc>
+    <lastmod>2026-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
