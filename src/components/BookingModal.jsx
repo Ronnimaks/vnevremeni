@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';
+import { X, Info, AlertCircle, AlertTriangle, CheckCircle, Copy, Check, Loader2 } from 'lucide-react';
+import payment from '../data/payment.json';
+import { submitBooking, newBookingId } from '../lib/booking';
 
 const emptyForm = {
   name: '',
   phone: '',
-  delivery: 'messenger',
-  messenger: 'telegram',
-  sameNumber: true,
-  messengerPhone: '',
-  email: '',
-  tickets: 1
+  tickets: 1,
+  consent: false,
+  // Скрытая ловушка для ботов: человек это поле не видит и не заполняет.
+  company: ''
 };
 
 const NAME_RE = /^[А-Яа-яЁёA-Za-z-]{2,}(\s+[А-Яа-яЁёA-Za-z-]{2,})+$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/;
 
 const onlyDigits = (value) => value.replace(/\D/g, '');
 
@@ -40,28 +39,15 @@ const parsePrice = (value) => {
   return digits ? parseInt(digits, 10) : 0;
 };
 
-// Декоративный узор для заглушки QR-кода: фиксированный, никаких платёжных данных внутри нет
-const QR_GRID = 21;
-const QR_MODULES = [];
-for (let y = 0; y < QR_GRID; y++) {
-  for (let x = 0; x < QR_GRID; x++) {
-    const inFinder = (x < 8 && y < 8) || (x > QR_GRID - 9 && y < 8) || (x < 8 && y > QR_GRID - 9);
-    if (inFinder) continue;
-    let hash = (x * 374761393 + y * 668265263) >>> 0;
-    hash = (hash ^ (hash >>> 13)) >>> 0;
-    hash = (hash * 1274126177) >>> 0;
-    hash = (hash ^ (hash >>> 16)) >>> 0;
-    if (hash % 100 < 48) QR_MODULES.push([x, y]);
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Safari до 13.4 и страницы без https не дают доступа к буферу обмена
+    return false;
   }
-}
-
-const QrFinder = ({ x, y }) => (
-  <g fill="#0f0f11">
-    <rect x={x} y={y} width="7" height="7" rx="1" />
-    <rect x={x + 1} y={y + 1} width="5" height="5" fill="#ffffff" />
-    <rect x={x + 2} y={y + 2} width="3" height="3" rx="0.5" />
-  </g>
-);
+};
 
 const FieldError = ({ message }) => (
   <p className="flex items-center gap-1.5 text-xs text-poet-accent mt-1.5">
@@ -70,16 +56,46 @@ const FieldError = ({ message }) => (
   </p>
 );
 
+const CopyButton = ({ value, label }) => {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return undefined;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  return (
+    <button
+      type="button"
+      onClick={async () => { if (await copyToClipboard(value)) setCopied(true); }}
+      aria-label={label}
+      className="flex items-center gap-1.5 text-xs font-medium text-poet-accent hover:text-white transition-colors shrink-0"
+    >
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? 'Скопировано' : 'Копировать'}
+    </button>
+  );
+};
+
 export default function BookingModal({ event, isOpen, onClose }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
+  const [isSending, setIsSending] = useState(false);
+  const [deliveryFailed, setDeliveryFailed] = useState(false);
   const dialogRef = useRef(null);
+  const bookingIdRef = useRef(null);
+  const sentCountRef = useRef(0);
 
   const resetAndClose = useCallback(() => {
     setStep(1);
     setForm(emptyForm);
     setErrors({});
+    setIsSending(false);
+    setDeliveryFailed(false);
+    bookingIdRef.current = null;
+    sentCountRef.current = 0;
     onClose();
   }, [onClose]);
 
@@ -128,6 +144,12 @@ export default function BookingModal({ event, isOpen, onClose }) {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
   };
 
+  const basePrice = event?.ticketCategories?.length
+    ? Math.min(...event.ticketCategories.map(cat => cat.price))
+    : parsePrice(event?.price);
+  const totalPrice = basePrice * form.tickets;
+  const totalLabel = totalPrice.toLocaleString('ru-RU');
+
   const validate = () => {
     const found = {};
     const name = form.name.trim();
@@ -137,53 +159,60 @@ export default function BookingModal({ event, isOpen, onClose }) {
     if (!form.phone) found.phone = 'Укажите номер телефона';
     else if (!isPhoneFilled(form.phone)) found.phone = 'Номер введён не полностью: +7 (999) 000-00-00';
 
-    if (form.delivery === 'messenger' && !form.sameNumber) {
-      if (!form.messengerPhone) found.messengerPhone = 'Укажите номер, привязанный к мессенджеру';
-      else if (!isPhoneFilled(form.messengerPhone)) found.messengerPhone = 'Номер введён не полностью: +7 (999) 000-00-00';
-    }
-
-    if (form.delivery === 'email') {
-      const email = form.email.trim();
-      if (!email) found.email = 'Укажите электронную почту';
-      else if (!EMAIL_RE.test(email)) found.email = 'Похоже, в адресе опечатка. Пример: name@mail.ru';
-    }
+    if (!form.consent) found.consent = 'Без согласия мы не можем принять заявку';
 
     setErrors(found);
     return Object.keys(found).length === 0;
   };
 
-  const handleNext = (e) => {
-    e.preventDefault();
-    if (validate()) setStep(2);
+  const send = async (kind) => {
+    if (!bookingIdRef.current) bookingIdRef.current = newBookingId();
+    const result = await submitBooking({
+      kind,
+      bookingId: bookingIdRef.current,
+      name: form.name.trim(),
+      phone: form.phone,
+      tickets: form.tickets,
+      total: totalPrice,
+      eventId: event?.id ?? '',
+      eventTitle: event?.title ?? '',
+      eventDate: event?.date ?? '',
+      company: form.company
+    });
+    sentCountRef.current += 1;
+    return result;
   };
 
-  const handleComplete = () => {
-    // TODO: здесь подключить отправку заявки, когда появится приём данных
-    // (бот в Telegram, форма-сервис вроде Formspree или собственный обработчик).
-    // Сейчас данные остаются в браузере и никуда не уходят.
+  const handleNext = async (e) => {
+    e.preventDefault();
+    if (!validate() || isSending) return;
+
+    setIsSending(true);
+    // Заявка уходит организатору до оплаты — со статусом «ждёт оплаты».
+    const result = await send(sentCountRef.current === 0 ? 'new' : 'update');
+    setIsSending(false);
+    setDeliveryFailed(!result.ok);
+    setStep(2);
+  };
+
+  const handlePaid = async () => {
+    if (isSending) return;
+    setIsSending(true);
+    await send('paid');
+    setIsSending(false);
     setStep(3);
   };
-
-  const basePrice = event?.ticketCategories?.length
-    ? Math.min(...event.ticketCategories.map(cat => cat.price))
-    : parsePrice(event?.price);
-  const totalPrice = basePrice * form.tickets;
-
-  const messengerName = form.messenger === 'telegram' ? 'Telegram' : 'WhatsApp';
-  const deliveryPhone = form.sameNumber ? form.phone : form.messengerPhone;
-  const deliveryTarget = form.delivery === 'email'
-    ? form.email.trim()
-    : `${messengerName}, ${deliveryPhone}`;
 
   const inputClass = (field) =>
     `w-full bg-black/30 border rounded px-4 py-3 text-white placeholder:text-poet-muted/60 focus:outline-none transition-colors ${
       errors[field] ? 'border-poet-accent/70 bg-poet-accent/5' : 'border-white/10 focus:border-poet-accent'
     }`;
 
-  const toggleClass = (active) =>
-    `py-2.5 px-3 rounded text-sm font-medium transition-colors ${
-      active ? 'bg-poet-accent text-poet-dark' : 'text-poet-muted hover:text-white'
-    }`;
+  const steps = [
+    { num: 1, text: `Откройте приложение своего банка и выберите перевод по номеру телефона (СБП).` },
+    { num: 2, text: `Введите номер ${payment.phone}. Банк получателя — ${payment.bank}, имя получателя — ${payment.recipient}. Обязательно сверьте имя перед отправкой.` },
+    { num: 3, text: `Отправьте ровно ${totalLabel} ₽ и в сообщении к переводу укажите свою фамилию — так организатору проще вас найти.` }
+  ];
 
   return (
     <AnimatePresence>
@@ -231,7 +260,7 @@ export default function BookingModal({ event, isOpen, onClose }) {
                   <div className="bg-poet-accent/10 border border-poet-accent/20 rounded-lg p-4 flex gap-3 items-start">
                     <Info className="w-5 h-5 text-poet-accent shrink-0 mt-0.5" />
                     <p className="text-xs text-poet-light/80 leading-relaxed">
-                      Вход на вечер — по спискам, места распределяет организатор на месте. Пожалуйста, указывайте настоящие данные.
+                      Вход на вечер — по спискам, места распределяет организатор на месте. Пожалуйста, указывайте настоящие данные: по ним вас найдут в списке.
                     </p>
                   </div>
 
@@ -259,75 +288,10 @@ export default function BookingModal({ event, isOpen, onClose }) {
                       className={inputClass('phone')}
                       placeholder="+7 (999) 000-00-00"
                     />
-                    {errors.phone && <FieldError message={errors.phone} />}
+                    {errors.phone
+                      ? <FieldError message={errors.phone} />
+                      : <p className="text-xs text-poet-muted mt-1.5">На этот номер организатор напишет в Telegram или WhatsApp, когда подтвердит оплату.</p>}
                   </div>
-
-                  <div>
-                    <span className="block text-xs font-medium text-poet-muted mb-1 uppercase tracking-wider">Куда прислать билет</span>
-                    <div className="grid grid-cols-2 gap-1 p-1 bg-black/30 border border-white/10 rounded">
-                      <button type="button" onClick={() => update('delivery', 'messenger')} className={toggleClass(form.delivery === 'messenger')}>
-                        В мессенджер
-                      </button>
-                      <button type="button" onClick={() => update('delivery', 'email')} className={toggleClass(form.delivery === 'email')}>
-                        На почту
-                      </button>
-                    </div>
-                  </div>
-
-                  {form.delivery === 'messenger' ? (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-1 p-1 bg-black/30 border border-white/10 rounded">
-                        <button type="button" onClick={() => update('messenger', 'telegram')} className={toggleClass(form.messenger === 'telegram')}>
-                          Telegram
-                        </button>
-                        <button type="button" onClick={() => update('messenger', 'whatsapp')} className={toggleClass(form.messenger === 'whatsapp')}>
-                          WhatsApp
-                        </button>
-                      </div>
-
-                      <label className="flex items-center gap-2.5 text-sm text-poet-light/80 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={form.sameNumber}
-                          onChange={(e) => update('sameNumber', e.target.checked)}
-                          className="w-4 h-4 accent-poet-accent"
-                        />
-                        Отправить на номер, указанный выше
-                      </label>
-
-                      {!form.sameNumber && (
-                        <div>
-                          <label htmlFor="booking-messenger-phone" className="block text-xs font-medium text-poet-muted mb-1 uppercase tracking-wider">
-                            Номер, привязанный к {messengerName}
-                          </label>
-                          <input
-                            id="booking-messenger-phone"
-                            type="tel"
-                            inputMode="tel"
-                            value={form.messengerPhone}
-                            onChange={(e) => update('messengerPhone', formatPhone(e.target.value))}
-                            className={inputClass('messengerPhone')}
-                            placeholder="+7 (999) 000-00-00"
-                          />
-                          {errors.messengerPhone && <FieldError message={errors.messengerPhone} />}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <label htmlFor="booking-email" className="block text-xs font-medium text-poet-muted mb-1 uppercase tracking-wider">Электронная почта</label>
-                      <input
-                        id="booking-email"
-                        type="email"
-                        inputMode="email"
-                        value={form.email}
-                        onChange={(e) => update('email', e.target.value)}
-                        className={inputClass('email')}
-                        placeholder="name@mail.ru"
-                      />
-                      {errors.email && <FieldError message={errors.email} />}
-                    </div>
-                  )}
 
                   <div>
                     <label htmlFor="booking-tickets" className="block text-xs font-medium text-poet-muted mb-1 uppercase tracking-wider">Количество билетов</label>
@@ -343,70 +307,117 @@ export default function BookingModal({ event, isOpen, onClose }) {
                     </select>
                   </div>
 
-                  <div className="pt-4 flex justify-between items-center border-t border-white/10">
-                    <span className="text-poet-muted">К оплате:</span>
-                    <span className="text-xl font-bold text-white">{totalPrice} ₽</span>
+                  {/* Ловушка для ботов: скрыта от людей и от скринридеров, боты её заполняют */}
+                  <input
+                    type="text"
+                    name="company"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    value={form.company}
+                    onChange={(e) => update('company', e.target.value)}
+                    className="absolute w-px h-px opacity-0 -z-10 pointer-events-none"
+                  />
+
+                  <div>
+                    <label className="flex items-start gap-2.5 text-xs text-poet-light/80 cursor-pointer select-none leading-relaxed">
+                      <input
+                        type="checkbox"
+                        checked={form.consent}
+                        onChange={(e) => update('consent', e.target.checked)}
+                        className="w-4 h-4 accent-poet-accent shrink-0 mt-0.5"
+                      />
+                      <span>
+                        Согласен(на) на обработку персональных данных в соответствии с{' '}
+                        <a href="./privacy.html" target="_blank" rel="noopener noreferrer" className="text-poet-accent hover:text-white transition-colors">политикой конфиденциальности</a>.
+                      </span>
+                    </label>
+                    {errors.consent && <FieldError message={errors.consent} />}
                   </div>
 
-                  <button type="submit" className="w-full btn-primary">
-                    Перейти к оплате
+                  <div className="pt-4 flex justify-between items-center border-t border-white/10">
+                    <span className="text-poet-muted">К оплате:</span>
+                    <span className="text-xl font-bold text-white">{totalLabel} ₽</span>
+                  </div>
+
+                  <button type="submit" disabled={isSending} className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-60">
+                    {isSending && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isSending ? 'Отправляем заявку…' : 'Перейти к оплате'}
                   </button>
                 </form>
               )}
 
               {step === 2 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <p className="text-xs font-medium text-poet-muted mb-1 uppercase tracking-wider">Способ оплаты</p>
-                      <p className="text-white font-medium">СБП — Система быстрых платежей</p>
+                  <div className="bg-black/40 border border-white/5 rounded-lg p-5 text-center">
+                    <p className="text-xs font-medium text-poet-muted mb-2 uppercase tracking-wider">К переводу</p>
+                    <p className="text-4xl font-bold text-white mb-3">{totalLabel} ₽</p>
+                    <p className="text-xs text-poet-muted">{form.tickets} {form.tickets === 1 ? 'билет' : 'билета(ов)'} × {basePrice.toLocaleString('ru-RU')} ₽</p>
+                  </div>
+
+                  {deliveryFailed && (
+                    <div className="bg-poet-accent/10 border border-poet-accent/30 rounded-lg p-4 flex gap-3 items-start">
+                      <AlertTriangle className="w-5 h-5 text-poet-accent shrink-0 mt-0.5" />
+                      <p className="text-xs text-poet-light/80 leading-relaxed">
+                        Не удалось отправить заявку автоматически. Оплатить можно как обычно, но, пожалуйста, продублируйте заявку организатору —{' '}
+                        <a href="#contacts" onClick={resetAndClose} className="text-poet-accent hover:text-white transition-colors">контакты в конце страницы</a>.
+                      </p>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs font-medium text-poet-muted mb-1 uppercase tracking-wider">К оплате</p>
-                      <p className="text-xl font-bold text-white">{totalPrice} ₽</p>
+                  )}
+
+                  <div className="bg-black/30 border border-white/5 rounded-lg divide-y divide-white/5">
+                    <div className="p-4 flex justify-between items-center gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs text-poet-muted mb-1">Номер телефона</p>
+                        <p className="text-white font-medium tabular-nums">{payment.phone}</p>
+                      </div>
+                      <CopyButton value={payment.phoneDigits} label="Скопировать номер телефона" />
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xs text-poet-muted mb-1">Банк получателя</p>
+                      <p className="text-white font-medium">{payment.bank}</p>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xs text-poet-muted mb-1">Получатель</p>
+                      <p className="text-white font-medium">{payment.recipient}</p>
+                    </div>
+                    <div className="p-4 flex justify-between items-center gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs text-poet-muted mb-1">Сумма</p>
+                        <p className="text-white font-medium tabular-nums">{totalLabel} ₽</p>
+                      </div>
+                      <CopyButton value={String(totalPrice)} label="Скопировать сумму" />
                     </div>
                   </div>
 
-                  <div className="bg-poet-accent/10 border border-poet-accent/30 rounded-lg p-4 flex gap-3 items-start">
-                    <AlertTriangle className="w-5 h-5 text-poet-accent shrink-0 mt-0.5" />
-                    <p className="text-xs text-poet-light/80 leading-relaxed">
-                      Приём оплаты ещё не подключён — это предварительный вид экрана. QR-код показан для примера, переводить деньги сейчас не нужно.
-                    </p>
-                  </div>
-
-                  <div className="bg-black/40 border border-white/5 rounded-lg py-6 flex flex-col items-center">
-                    <div className="relative w-44 h-44 bg-white rounded-lg p-3">
-                      <svg viewBox="0 0 21 21" className="w-full h-full" role="img" aria-label="Заглушка QR-кода">
-                        <QrFinder x={0} y={0} />
-                        <QrFinder x={14} y={0} />
-                        <QrFinder x={0} y={14} />
-                        {QR_MODULES.map(([x, y]) => (
-                          <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="#0f0f11" />
-                        ))}
-                      </svg>
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="bg-poet-dark text-poet-light text-[10px] uppercase tracking-widest px-2.5 py-1 rounded">Образец</span>
-                      </span>
+                  {payment.qrImage && (
+                    <div className="bg-black/40 border border-white/5 rounded-lg py-6 flex flex-col items-center">
+                      <img src={payment.qrImage} alt={payment.qrAlt} className="w-44 h-44 bg-white rounded-lg p-3 object-contain" />
+                      <p className="text-poet-muted text-xs mt-4 text-center px-4">
+                        Если вы за компьютером — наведите на код камеру телефона. Сумму нужно будет ввести вручную.
+                      </p>
                     </div>
-                    <p className="text-poet-muted text-xs mt-4">Здесь будет QR-код для оплаты</p>
-                  </div>
+                  )}
 
                   <ol className="space-y-3">
-                    <li className="flex gap-3 items-start">
-                      <span className="w-6 h-6 rounded-full border border-poet-accent/40 text-poet-accent text-xs flex items-center justify-center shrink-0">1</span>
-                      <p className="text-sm text-poet-light/80 leading-relaxed">Отсканируйте QR-код камерой телефона или в приложении банка — раздел «Оплата по QR».</p>
-                    </li>
-                    <li className="flex gap-3 items-start">
-                      <span className="w-6 h-6 rounded-full border border-poet-accent/40 text-poet-accent text-xs flex items-center justify-center shrink-0">2</span>
-                      <p className="text-sm text-poet-light/80 leading-relaxed">Проверьте сумму {totalPrice} ₽ и подтвердите перевод, затем вернитесь сюда.</p>
-                    </li>
+                    {steps.map(({ num, text }) => (
+                      <li key={num} className="flex gap-3 items-start">
+                        <span className="w-6 h-6 rounded-full border border-poet-accent/40 text-poet-accent text-xs flex items-center justify-center shrink-0">{num}</span>
+                        <p className="text-sm text-poet-light/80 leading-relaxed">{text}</p>
+                      </li>
+                    ))}
                   </ol>
 
-                  <button onClick={handleComplete} className="w-full btn-primary">
+                  <p className="text-xs text-poet-muted leading-relaxed">
+                    Перевод по СБП проходит без комиссии. Заявка уже у организатора — если сейчас закроете страницу, ничего не потеряется.
+                  </p>
+
+                  <button onClick={handlePaid} disabled={isSending} className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-60">
+                    {isSending && <Loader2 className="w-4 h-4 animate-spin" />}
                     Я оплатил(а)
                   </button>
                   <button onClick={() => setStep(1)} className="w-full py-3 text-poet-muted hover:text-white transition-colors text-sm font-medium">
-                    Назад
+                    Изменить данные
                   </button>
                 </motion.div>
               )}
@@ -414,24 +425,27 @@ export default function BookingModal({ event, isOpen, onClose }) {
               {step === 3 && (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                   <CheckCircle className="w-14 h-14 text-poet-accent mx-auto mb-5" />
-                  <h4 className="text-2xl font-serif font-bold text-white mb-3">Заявка заполнена</h4>
+                  <h4 className="text-2xl font-serif font-bold text-white mb-3">Заявка принята</h4>
                   <p className="text-poet-muted text-sm leading-relaxed mb-6">
-                    Сайт пока работает в предварительном режиме: оплата и отправка билетов ещё не подключены, поэтому заявка никуда не отправилась и билет не придёт.
-                    Чтобы забронировать место сейчас, напишите организатору — <a href="#contacts" onClick={resetAndClose} className="text-poet-accent hover:text-white transition-colors">контакты в конце страницы</a>.
+                    Организатор сверит поступление и напишет вам в Telegram или WhatsApp на указанный номер. Обычно это занимает несколько часов.
                   </p>
 
                   <div className="bg-black/30 border border-white/5 rounded-lg p-4 text-left text-sm space-y-2 mb-6">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-poet-muted shrink-0">Заявка №</span>
+                      <span className="text-poet-light text-right">{bookingIdRef.current}</span>
+                    </div>
                     <div className="flex justify-between gap-4">
                       <span className="text-poet-muted shrink-0">Гость</span>
                       <span className="text-poet-light text-right break-words">{form.name.trim()}</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-poet-muted shrink-0">Билеты</span>
-                      <span className="text-poet-light text-right">{form.tickets} шт. — {totalPrice} ₽</span>
+                      <span className="text-poet-muted shrink-0">Вечер</span>
+                      <span className="text-poet-light text-right break-words">{event?.title}</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-poet-muted shrink-0">Билет придёт</span>
-                      <span className="text-poet-light text-right break-words">{deliveryTarget}</span>
+                      <span className="text-poet-muted shrink-0">Билеты</span>
+                      <span className="text-poet-light text-right">{form.tickets} шт. — {totalLabel} ₽</span>
                     </div>
                   </div>
 

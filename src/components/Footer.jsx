@@ -49,6 +49,9 @@ export default function Footer() {
           <p className="text-poet-muted/50 text-xs">
             © {new Date().getFullYear()} Музыкально-поэтический клуб «Вне времени». Все права защищены.
           </p>
+          <a href="./privacy.html" className="text-poet-muted/50 hover:text-poet-accent transition-colors text-xs">
+            Политика конфиденциальности
+          </a>
         </div>
       </div>
     </footer>
