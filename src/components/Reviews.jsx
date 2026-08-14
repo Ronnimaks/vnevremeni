@@ -35,9 +35,12 @@ const VideoReview = ({ review }) => (
       />
     </div>
 
-    <div className="p-3 sm:p-6 flex flex-col flex-grow bg-poet-card/90">
-      <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-poet-accent/30 mb-2 sm:mb-4" />
-      <div className="mt-auto">
+    {/* Имена выровнены по верху, на одном отступе от кавычки. Раньше блок
+        прижимался к низу карточки, и у кого роль длиннее — у того имя
+        оказывалось выше. Разная длина ролей теперь уходит вниз, в пустоту. */}
+    <div className="p-3 pb-5 sm:p-6 flex flex-col flex-grow bg-poet-card/90">
+      <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-poet-accent/30 mb-4" />
+      <div>
         <h5 className="font-medium text-white text-sm">{review.name}</h5>
         <p className="text-poet-accent text-xs leading-snug mt-1">{review.role}</p>
       </div>
