@@ -1,16 +1,27 @@
 // Обработчик заявок с сайта клуба «Вне времени».
 //
 // Принимает заявку от формы бронирования и пересылает её организатору в Telegram.
-// Токен бота хранится в секретах Worker'а и в код сайта никогда не попадает —
-// именно ради этого обработчик и существует.
+// Токен бота лежит в секретах Cloudflare и в код сайта никогда не попадает —
+// ради этого обработчик и существует.
 //
-// Секреты (wrangler secret put):
+// Живёт на pages.dev, а не на workers.dev: адреса workers.dev режут российские
+// провайдеры, и заявки у части гостей молча не доходили.
+//
+// Секреты (wrangler pages secret put):
 //   TELEGRAM_BOT_TOKEN — токен бота от @BotFather
 //   TELEGRAM_CHAT_ID   — id чата организатора
 // Переменные (wrangler.toml):
-//   ALLOWED_ORIGINS    — домены сайта через запятую
+//   ALLOWED_ORIGINS    — адреса сайта через запятую
 
 const MAX_BODY_BYTES = 2048;
+
+// Подстраховка на случай, если переменная не доехала до площадки:
+// без списка адресов форма получила бы 403 и заявки встали бы совсем.
+const FALLBACK_ORIGINS = [
+  'https://vnevremeni-club.ru',
+  'https://www.vnevremeni-club.ru',
+  'https://ronnimaks.github.io'
+];
 
 const KIND_TITLES = {
   new: '🕐 НОВАЯ ЗАЯВКА — ждёт оплаты',
@@ -24,22 +35,23 @@ const escapeHtml = (value) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-const allowedOrigins = (env) =>
-  (env.ALLOWED_ORIGINS || '')
+const allowedOrigins = (env) => {
+  const fromEnv = (env.ALLOWED_ORIGINS || '')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
+  return fromEnv.length ? fromEnv : FALLBACK_ORIGINS;
+};
 
 const corsHeaders = (request, env) => {
   const origin = request.headers.get('Origin') || '';
-  const allowed = allowedOrigins(env);
   const headers = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin'
   };
-  if (allowed.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
+  if (allowedOrigins(env).includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
   return headers;
 };
 
@@ -105,46 +117,44 @@ const buildMessage = (data) => {
   return lines.filter(line => line !== null).join('\n');
 };
 
-export default {
-  async fetch(request, env) {
-    const cors = corsHeaders(request, env);
+export async function onRequest({ request, env }) {
+  const cors = corsHeaders(request, env);
 
-    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
-    if (request.method !== 'POST') return json({ error: 'method-not-allowed' }, 405, cors);
-    if (!cors['Access-Control-Allow-Origin']) return json({ error: 'origin-not-allowed' }, 403, cors);
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (request.method !== 'POST') return json({ error: 'method-not-allowed' }, 405, cors);
+  if (!cors['Access-Control-Allow-Origin']) return json({ error: 'origin-not-allowed' }, 403, cors);
 
-    const raw = await request.text();
-    if (raw.length > MAX_BODY_BYTES) return json({ error: 'too-large' }, 413, cors);
+  const raw = await request.text();
+  if (raw.length > MAX_BODY_BYTES) return json({ error: 'too-large' }, 413, cors);
 
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      return json({ error: 'bad-json' }, 400, cors);
-    }
-
-    const problem = findProblem(data);
-    // Спам-ботам отвечаем «ок», чтобы они не подбирали формат и не пробовали снова.
-    if (problem === 'spam') return json({ ok: true }, 200, cors);
-    if (problem) return json({ error: problem }, 400, cors);
-
-    const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: env.TELEGRAM_CHAT_ID,
-        text: buildMessage(data),
-        parse_mode: 'HTML',
-        disable_web_page_preview: true
-      })
-    });
-
-    if (!response.ok) {
-      // Подробности в лог Worker'а, наружу — только факт неудачи.
-      console.error('telegram-failed', response.status, await response.text());
-      return json({ error: 'delivery-failed' }, 502, cors);
-    }
-
-    return json({ ok: true }, 200, cors);
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return json({ error: 'bad-json' }, 400, cors);
   }
-};
+
+  const problem = findProblem(data);
+  // Спам-ботам отвечаем «ок», чтобы они не подбирали формат и не пробовали снова.
+  if (problem === 'spam') return json({ ok: true }, 200, cors);
+  if (problem) return json({ error: problem }, 400, cors);
+
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: env.TELEGRAM_CHAT_ID,
+      text: buildMessage(data),
+      parse_mode: 'HTML',
+      disable_web_page_preview: true
+    })
+  });
+
+  if (!response.ok) {
+    // Подробности в лог площадки, наружу — только факт неудачи.
+    console.error('telegram-failed', response.status, await response.text());
+    return json({ error: 'delivery-failed' }, 502, cors);
+  }
+
+  return json({ ok: true }, 200, cors);
+}

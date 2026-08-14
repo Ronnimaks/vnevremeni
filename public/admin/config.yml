@@ -149,6 +149,13 @@ collections:
             widget: string
             hint: Как оно показывается в приложении банка при переводе
 
+          - name: organizerTelegram
+            label: Telegram организатора для заявок
+            widget: string
+            hint: >-
+              Ник без собачки, например malinasladkayaa. Сюда гость отправит заявку
+              руками, если она не ушла автоматически
+
           - name: qrImage
             label: QR-код для оплаты
             widget: image

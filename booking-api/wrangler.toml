@@ -1,0 +1,12 @@
+name = "vnevrem-zayavki"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "public"
+
+# Адреса, с которых разрешено принимать заявки. Через запятую, без слеша на конце.
+# Если сайт переедет на новый адрес, его нужно добавить сюда — иначе форма получит 403.
+[vars]
+ALLOWED_ORIGINS = "https://vnevremeni-club.ru,https://www.vnevremeni-club.ru,https://ronnimaks.github.io"
+
+# Секреты задаются отдельно и в файл не пишутся:
+#   npx wrangler pages secret put TELEGRAM_BOT_TOKEN
+#   npx wrangler pages secret put TELEGRAM_CHAT_ID
