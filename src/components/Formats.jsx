@@ -53,12 +53,12 @@ export default function Formats() {
               className="glass-card flex flex-col md:flex-row h-full overflow-hidden group"
             >
               <div className="w-full md:w-2/5 h-48 md:h-auto relative overflow-hidden">
-                <div className="absolute inset-0 bg-poet-accent/20 mix-blend-multiply z-10 group-hover:bg-transparent transition-colors duration-500" />
+                <div className="absolute inset-0 [@media(hover:hover)]:bg-poet-accent/20 mix-blend-multiply z-10 group-hover:bg-transparent transition-colors duration-500" />
                 <img 
                   src={format.image} 
                   alt={format.imageAlt}
                   loading="lazy"
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transform group-hover:scale-105 transition-all duration-700"
+                  className="w-full h-full object-cover [@media(hover:hover)]:grayscale group-hover:grayscale-0 transform group-hover:scale-105 transition-all duration-700"
                 />
               </div>
               <div className="p-6 md:p-8 w-full md:w-3/5 flex flex-col justify-center">

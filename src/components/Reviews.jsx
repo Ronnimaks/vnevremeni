@@ -35,8 +35,8 @@ const VideoReview = ({ review }) => (
       />
     </div>
 
-    <div className="p-6 flex flex-col flex-grow bg-poet-card/90">
-      <Quote className="w-6 h-6 text-poet-accent/30 mb-4" />
+    <div className="p-3 sm:p-6 flex flex-col flex-grow bg-poet-card/90">
+      <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-poet-accent/30 mb-2 sm:mb-4" />
       <div className="mt-auto">
         <h5 className="font-medium text-white text-sm">{review.name}</h5>
         <p className="text-poet-accent text-xs leading-snug mt-1">{review.role}</p>
@@ -54,9 +54,9 @@ export default function Reviews() {
           <p className="text-poet-muted text-lg max-w-2xl mx-auto">Живые эмоции наших резидентов и слушателей.</p>
         </div>
 
-        {/* Вертикальный кадр на телефоне занимал почти весь экран и перебивал всё
-            остальное — на узких экранах карточку ужимаем. */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 max-w-3xl mx-auto justify-items-center">
+        {/* Вертикальный кадр в одну колонку занимал почти весь экран телефона —
+            ставим отзывы рядом, тогда оба видно сразу. */}
+        <div className="grid grid-cols-2 gap-4 md:gap-10 max-w-3xl mx-auto justify-items-center">
           {reviews.map((review, index) => (
             <motion.div
               key={review.id}
@@ -64,7 +64,7 @@ export default function Reviews() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="w-full max-w-[16rem] sm:max-w-sm h-full"
+              className="w-full max-w-sm h-full"
             >
               <VideoReview review={review} />
             </motion.div>

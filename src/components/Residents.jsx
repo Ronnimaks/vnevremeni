@@ -26,13 +26,16 @@ export default function Residents() {
               className="group relative overflow-hidden rounded-lg aspect-[3/4] cursor-pointer"
               onClick={() => setSelectedResident(resident)}
             >
-              {/* На телефоне кадр обрезается сверху — иначе у вертикальных фото уходит макушка.
+              {/* Кадры сняты по-разному: где-то человек стоит выше, где-то ниже. Одна общая
+                  точка обрезки одним срезала бы макушку, другим оставляла пустой потолок,
+                  поэтому у каждого снимка своя — imageFocus в residentsData.
                   Обесцвечивание только там, где есть мышь: на сенсорном экране навести нечем,
                   и фото так и осталось бы серым. */}
               <img
                 src={resident.image}
                 alt={resident.name}
-                className="w-full h-full object-cover object-top md:object-center [@media(hover:hover)]:grayscale [@media(hover:hover)]:opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 transform group-hover:scale-110"
+                style={{ objectPosition: `center ${resident.imageFocus || '30%'}` }}
+                className="w-full h-full object-cover [@media(hover:hover)]:grayscale [@media(hover:hover)]:opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-poet-dark via-poet-dark/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
 
@@ -73,10 +76,13 @@ export default function Residents() {
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="w-full md:w-2/5 h-64 md:h-auto shrink-0 relative">
+              {/* На телефоне под фото отводилась полоса в 256 пикселей — от вертикального
+                  портрета оставалась середина лица. Отдаём кадру нормальную высоту. */}
+              <div className="w-full md:w-2/5 aspect-[4/5] md:aspect-auto md:h-auto shrink-0 relative">
                 <img
                   src={selectedResident.image}
                   alt={selectedResident.name}
+                  style={{ objectPosition: `center ${selectedResident.imageFocus || '30%'}` }}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-poet-card to-transparent md:hidden" />
