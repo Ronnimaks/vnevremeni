@@ -412,6 +412,11 @@ export default function BookingModal({ event, isOpen, onClose }) {
                     Перевод по СБП проходит без комиссии. Заявка уже у организатора — если сейчас закроете страницу, ничего не потеряется.
                   </p>
 
+                  {/* Условие согласовано с организатором: гость должен увидеть его до перевода, а не после. */}
+                  <p className="text-xs text-poet-light/70 leading-relaxed border-l-2 border-poet-accent/40 pl-3">
+                    Билет возврату не подлежит: если вы не сможете прийти, деньги не возвращаются.
+                  </p>
+
                   <button onClick={handlePaid} disabled={isSending} className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-60">
                     {isSending && <Loader2 className="w-4 h-4 animate-spin" />}
                     Я оплатил(а)
