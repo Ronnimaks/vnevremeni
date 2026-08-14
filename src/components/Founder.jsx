@@ -51,12 +51,13 @@ export default function Founder() {
                   width="768"
                   height="1024"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                  className="absolute inset-0 w-full h-full object-cover [@media(hover:hover)]:grayscale group-hover:grayscale-0 transition-all duration-700"
                 />
               </div>
               
-              {/* Floating Badge */}
-              <div className="absolute -bottom-6 -left-6 bg-poet-dark/90 backdrop-blur-md border border-poet-accent/30 p-4 rounded shadow-xl z-20">
+              {/* Плашка с именем. На узком экране не свешивается влево:
+                  выступ в 24 пикселя выводил её за край телефона. */}
+              <div className="absolute -bottom-6 left-0 sm:-left-6 bg-poet-dark/90 backdrop-blur-md border border-poet-accent/30 p-4 rounded shadow-xl z-20">
                 <h4 className="font-serif font-bold text-white text-lg">Натали</h4>
                 <p className="text-poet-accent text-xs uppercase tracking-wider mt-1">Основатель, поэт и резидент</p>
               </div>

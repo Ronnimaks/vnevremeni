@@ -111,7 +111,9 @@ export default function Gallery() {
               transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
               className="relative block w-full mb-4 overflow-hidden group break-inside-avoid cursor-zoom-in"
             >
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none" />
+              {/* Затемнение снимается наведением, поэтому на сенсорном экране его нет вовсе —
+                  иначе вся галерея выглядела бы тусклой и выцветшей. */}
+              <div className="absolute inset-0 [@media(hover:hover)]:bg-black/40 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none" />
               <img
                 src={`./images/gallery/${item.file}_thumb.webp`}
                 alt={item.alt}
@@ -137,7 +139,9 @@ export default function Gallery() {
           <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-4">Видео с вечеров</h3>
           <p className="text-poet-muted mb-8 max-w-xl">Живые записи выступлений — так это звучит и выглядит вживую.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Записи с вечеров идут в один столбец: вдвоём в ряд они получались
+              мельче вертикальных отзывов, хотя показывают куда больше. */}
+          <div className="grid grid-cols-1 gap-8 max-w-4xl">
             {videos.map((video, index) => (
               <motion.div
                 key={video.id}
@@ -153,7 +157,6 @@ export default function Gallery() {
                     title={video.title}
                     loading="lazy"
                     allow="encrypted-media; fullscreen; picture-in-picture; screen-wake-lock"
-                    allowFullScreen
                     className="absolute inset-0 w-full h-full border-0"
                   />
                 </div>

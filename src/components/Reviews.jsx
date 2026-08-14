@@ -54,6 +54,8 @@ export default function Reviews() {
           <p className="text-poet-muted text-lg max-w-2xl mx-auto">Живые эмоции наших резидентов и слушателей.</p>
         </div>
 
+        {/* Вертикальный кадр на телефоне занимал почти весь экран и перебивал всё
+            остальное — на узких экранах карточку ужимаем. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 max-w-3xl mx-auto justify-items-center">
           {reviews.map((review, index) => (
             <motion.div
@@ -62,7 +64,7 @@ export default function Reviews() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="w-full max-w-sm h-full"
+              className="w-full max-w-[16rem] sm:max-w-sm h-full"
             >
               <VideoReview review={review} />
             </motion.div>

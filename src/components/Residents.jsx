@@ -26,10 +26,13 @@ export default function Residents() {
               className="group relative overflow-hidden rounded-lg aspect-[3/4] cursor-pointer"
               onClick={() => setSelectedResident(resident)}
             >
+              {/* На телефоне кадр обрезается сверху — иначе у вертикальных фото уходит макушка.
+                  Обесцвечивание только там, где есть мышь: на сенсорном экране навести нечем,
+                  и фото так и осталось бы серым. */}
               <img
                 src={resident.image}
                 alt={resident.name}
-                className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 transform group-hover:scale-110"
+                className="w-full h-full object-cover object-top md:object-center [@media(hover:hover)]:grayscale [@media(hover:hover)]:opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-poet-dark via-poet-dark/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
 
