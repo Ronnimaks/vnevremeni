@@ -82,7 +82,7 @@ export default function Events({ onBook }) {
             Ближайшие <span className="text-poet-accent italic">события</span>
           </h2>
           <p className="text-poet-muted text-lg">
-            Афиша наших встреч. Количество мест ограничено — камерная атмосфера дороже полного зала.
+            Афиша наших встреч. Количество мест ограничено.
           </p>
         </div>
 

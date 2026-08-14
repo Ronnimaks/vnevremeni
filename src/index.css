@@ -83,6 +83,23 @@
   .glass-card {
     @apply bg-poet-card/80 backdrop-blur-md border border-white/5 rounded-lg overflow-hidden transition-all duration-300 hover:border-poet-accent/30;
   }
+
+  /* Золотой перелив на заголовке. Раньше строка красилась приёмом «прозрачный
+     текст + градиент по буквам»: там, где браузер этого не умеет, строка
+     пропадала целиком. Теперь по умолчанию она просто золотая, а перелив
+     включается только там, где он гарантированно отрисуется. */
+  .text-gold {
+    color: var(--color-poet-accent);
+  }
+
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    .text-gold {
+      background-image: linear-gradient(to right, var(--color-poet-accent), #e6d0a7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
 }
 
 html {

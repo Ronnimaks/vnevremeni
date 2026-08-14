@@ -5,12 +5,17 @@ export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* Background Image & Overlay */}
+      {/* Затемнение раньше было градиентом на всю высоту экрана: на невысоких
+          телефонах видимая часть попадала в самое плотное место, и фотография
+          пропадала совсем. Теперь плотность одинаковая при любой высоте, а
+          градиентом остался только переход к следующему блоку внизу. */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-poet-dark/80 via-poet-dark/95 to-poet-dark z-10" />
-        <img 
+        <div className="absolute inset-0 bg-poet-dark/75 z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-poet-dark z-10" />
+        <img
           src="./images/hero_bg.webp"
           alt="Зал во время поэтического вечера клуба «Вне времени»"
-          className="w-full h-full object-cover opacity-40 grayscale"
+          className="w-full h-full object-cover opacity-45 grayscale"
         />
       </div>
 
@@ -27,7 +32,7 @@ export default function Hero() {
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-tight">
             Поэзия — это <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-poet-accent to-[#e6d0a7] italic">что-то на вечном</span>
+            <span className="text-gold italic">что-то на вечном</span>
           </h1>
           
           <p className="text-lg md:text-xl text-poet-muted mb-10 max-w-2xl mx-auto leading-relaxed">
