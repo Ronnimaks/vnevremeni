@@ -14,7 +14,7 @@ media_folder: public/images/events
 public_folder: ./images/events
 
 publish_mode: simple
-site_url: https://ronnimaks.github.io/vnevremeni/
+site_url: https://vnevremeni-club.ru/
 locale: ru
 
 collections:

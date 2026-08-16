@@ -6,4 +6,4 @@ Allow: /
 Disallow: /privacy.html
 Disallow: /admin/
 
-Sitemap: https://ronnimaks.github.io/vnevremeni/sitemap.xml
+Sitemap: https://vnevremeni-club.ru/sitemap.xml
