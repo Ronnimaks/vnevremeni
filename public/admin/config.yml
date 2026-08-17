@@ -5,7 +5,7 @@
 
 backend:
   name: github
-  repo: Ronnimaks/vnevremeni
+  repo: Vne-vremeni/vnevremeni
   branch: main
   base_url: https://ЗАМЕНИТЬ-НА-АДРЕС-СЛУЖБЫ-ВХОДА.workers.dev
 
@@ -120,6 +120,79 @@ collections:
                 label: Служебный код
                 widget: string
                 hint: Латиницей, без пробелов. Например anesteziya-2026-08-27
+
+  - name: residents
+    label: Резиденты
+    files:
+      - name: residents_list
+        label: Состав клуба
+        file: src/data/residents.json
+        format: json
+        description: >-
+          Здесь можно добавить нового резидента, убрать ушедшего или поменять
+          порядок — на сайте они показываются в том же порядке, что и здесь.
+        fields:
+          - name: residents
+            label: Резиденты
+            label_singular: Резидент
+            widget: list
+            summary: '{{fields.name}} — {{fields.role}}'
+            fields:
+              - name: name
+                label: Имя
+                widget: string
+                hint: Так, как человека называют на сцене
+
+              - name: role
+                label: Кто это
+                widget: string
+                hint: Например «поэт, резидент клуба» или «вокалистка, резидент клуба»
+
+              - name: image
+                label: Фотография
+                widget: image
+                media_folder: '/public/residents'
+                public_folder: './residents'
+                hint: >-
+                  Вертикальный портрет. Лучше всего смотрится кадр, где человек
+                  занимает бо́льшую часть высоты
+
+              - name: imageFocus
+                label: Положение лица в кадре
+                widget: string
+                required: false
+                default: '30%'
+                pattern: ['^\d{1,2}%$', 'Впишите число с процентом, например 30%']
+                hint: >-
+                  Меняйте, только если на фото срезана макушка или сверху слишком
+                  много пустого места. Меньше процент — кадр показывается выше
+
+              - name: bio
+                label: Рассказ о человеке
+                widget: text
+                hint: Пустая строка между абзацами разделит текст на абзацы и на сайте
+
+              - name: socials
+                label: Ссылки на соцсети
+                widget: list
+                required: false
+                label_singular: Ссылка
+                summary: '{{fields.type}} — {{fields.url}}'
+                fields:
+                  - name: type
+                    label: Где
+                    widget: select
+                    options:
+                      - { label: 'Telegram', value: 'tg' }
+                      - { label: 'Instagram', value: 'ig' }
+                      - { label: 'YouTube', value: 'yt' }
+                      - { label: 'ВКонтакте', value: 'vk' }
+                      - { label: 'Стихи.ру', value: 'stihi' }
+                      - { label: 'Личный сайт', value: 'site' }
+                  - name: url
+                    label: Адрес
+                    widget: string
+                    hint: Полностью, вместе с https://
 
   - name: payment
     label: Оплата

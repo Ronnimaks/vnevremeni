@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { residentsData } from '../data/residentsData';
+// Файл лежит объектом с ключом residents, а не голым списком: этого требует
+// личный кабинет — он умеет править только именованные поля файла.
+import residentsData from '../data/residents.json';
 import { SocialLinks } from './SocialIcons';
 
 export default function Residents() {
   const [selectedResident, setSelectedResident] = useState(null);
+  const residents = residentsData.residents || [];
 
   return (
     <section id="residents" className="py-24 bg-poet-dark relative">
@@ -16,9 +19,9 @@ export default function Residents() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-          {residentsData.map((resident, index) => (
+          {residents.map((resident, index) => (
             <motion.div
-              key={resident.id}
+              key={resident.name}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -28,7 +31,7 @@ export default function Residents() {
             >
               {/* Кадры сняты по-разному: где-то человек стоит выше, где-то ниже. Одна общая
                   точка обрезки одним срезала бы макушку, другим оставляла пустой потолок,
-                  поэтому у каждого снимка своя — imageFocus в residentsData.
+                  поэтому у каждого снимка своя — imageFocus в residents.json.
                   Обесцвечивание только там, где есть мышь: на сенсорном экране навести нечем,
                   и фото так и осталось бы серым. */}
               <img
