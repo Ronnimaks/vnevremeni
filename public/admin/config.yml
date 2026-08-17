@@ -1,13 +1,15 @@
 # Настройки личного кабинета (Sveltia CMS).
 #
-# base_url — адрес службы входа через GitHub (Worker sveltia-cms-auth).
-# Пока он не развёрнут и не вписан сюда, кабинет не сможет пустить внутрь.
+# base_url — где живёт служба входа через GitHub. Она встроена в сам сайт:
+# site/functions/auth.js и site/functions/callback.js. Отдельным адресом на
+# workers.dev её ставить нельзя — такие адреса у российских провайдеров
+# не открываются, и кабинет не пустил бы внутрь.
 
 backend:
   name: github
   repo: Vne-vremeni/vnevremeni
   branch: main
-  base_url: https://ЗАМЕНИТЬ-НА-АДРЕС-СЛУЖБЫ-ВХОДА.workers.dev
+  base_url: https://vnevremeni-club.ru
 
 # Куда кабинет кладёт загруженные картинки и как на них ссылается сайт
 media_folder: public/images/events
