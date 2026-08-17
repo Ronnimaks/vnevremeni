@@ -11,9 +11,12 @@ backend:
   branch: main
   base_url: https://vnevremeni-club.ru
 
-# Куда кабинет кладёт загруженные картинки и как на них ссылается сайт
+# Куда кабинет кладёт загруженные картинки и как на них ссылается сайт.
+# Адрес для сайта обязан начинаться со слэша — иначе кабинет вообще не открывается.
+# Раньше сайт лежал в подкаталоге чужого адреса, и такие пути ломались бы;
+# теперь у клуба свой домен, и корень сайта — это корень домена.
 media_folder: public/images/events
-public_folder: ./images/events
+public_folder: /images/events
 
 publish_mode: simple
 site_url: https://vnevremeni-club.ru/
@@ -154,7 +157,7 @@ collections:
                 label: Фотография
                 widget: image
                 media_folder: '/public/residents'
-                public_folder: './residents'
+                public_folder: '/residents'
                 hint: >-
                   Вертикальный портрет. Лучше всего смотрится кадр, где человек
                   занимает бо́льшую часть высоты
