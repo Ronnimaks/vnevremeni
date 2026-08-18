@@ -120,6 +120,47 @@ function buildMessage(array $data): string
     return implode("\n", $lines);
 }
 
+/**
+ * Простой ограничитель: не больше десяти заявок с одного адреса за час.
+ *
+ * Без него любой человек скриптом за минуту завалил бы Telegram заказчицы
+ * тысячей заявок, и настоящие потерялись бы среди мусора.
+ *
+ * При любой ошибке пропускаем заявку: потерять настоящую бронь хуже,
+ * чем пропустить лишнюю.
+ */
+function tooManyRequests(): bool
+{
+    $limit = 10;
+    $window = 3600;
+
+    try {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        if ($ip === '') return false;
+
+        $dir = sys_get_temp_dir() . '/vnevremeni-booking';
+        if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) return false;
+
+        $file = $dir . '/' . md5($ip) . '.json';
+        $now = time();
+        $state = ['start' => $now, 'count' => 0];
+
+        if (is_readable($file)) {
+            $saved = json_decode((string) @file_get_contents($file), true);
+            if (is_array($saved) && isset($saved['start'], $saved['count']) && $now - $saved['start'] < $window) {
+                $state = $saved;
+            }
+        }
+
+        $state['count']++;
+        @file_put_contents($file, json_encode($state), LOCK_EX);
+
+        return $state['count'] > $limit;
+    } catch (\Throwable $e) {
+        return false;
+    }
+}
+
 function sendToTelegram(string $text, array $config): bool
 {
     $url = 'https://api.telegram.org/bot' . $config['TELEGRAM_BOT_TOKEN'] . '/sendMessage';
@@ -154,13 +195,27 @@ function sendToTelegram(string $text, array $config): bool
 
 date_default_timezone_set('Europe/Moscow');
 
-// Форма и обработчик теперь на одном домене, так что эти заголовки нужны
-// только для запасного адреса и для предполётных запросов браузера.
+// Форма и обработчик на одном домене, так что эти заголовки нужны только для
+// запасного адреса и для предполётных запросов браузера.
+//
+// Origin разрешаем не любой: иначе чужая страница смогла бы слать заявки от имени
+// посетителя и завалить Telegram заказчицы. Но и требовать его строго нельзя —
+// Safari на однодоменных запросах Origin шлёт не всегда, и айфоны остались бы
+// без брони.
 header('Vary: Origin');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Max-Age: 86400');
-header('Access-Control-Allow-Origin: ' . ($_SERVER['HTTP_ORIGIN'] ?? ('https://' . ($_SERVER['HTTP_HOST'] ?? ''))));
+
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowed = ['https://' . $host, 'http://' . $host, 'https://vnevremeni-club.ru', 'https://www.vnevremeni-club.ru'];
+
+if ($origin === '' || in_array($origin, $allowed, true)) {
+    header('Access-Control-Allow-Origin: ' . ($origin !== '' ? $origin : 'https://' . $host));
+} elseif (($_SERVER['REQUEST_METHOD'] ?? '') !== 'OPTIONS') {
+    respond(['error' => 'origin-not-allowed'], 403);
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(204);
@@ -187,6 +242,13 @@ if ($problem === 'spam') {
 }
 if ($problem !== null) {
     respond(['error' => $problem], 400);
+}
+
+// Живой человек больше десяти броней за час не делает. Отвечаем как обычно,
+// чтобы тот, кто долбится скриптом, не понял, что его отсекли, и не начал подбирать.
+if (tooManyRequests()) {
+    error_log('booking: превышен предел заявок с адреса ' . ($_SERVER['REMOTE_ADDR'] ?? '?'));
+    respond(['ok' => true], 200);
 }
 
 $config = club_secrets();
