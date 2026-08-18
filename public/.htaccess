@@ -14,13 +14,9 @@ RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
 
 # Только https. Условие по имени домена — чтобы технический адрес хостинга,
 # на котором сертификата нет, продолжал открываться для проверок.
-#
-# ВРЕМЕННО ОТКЛЮЧЕНО на время переезда: сертификат выпускается только после того,
-# как домен начнёт смотреть на новый хостинг, а до этого момента принудительный
-# https положил бы сайт целиком. Включить обратно сразу после выпуска сертификата.
-# RewriteCond %{HTTP_HOST} vnevremeni-club\.ru [NC]
-# RewriteCond %{HTTPS} !=on
-# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+RewriteCond %{HTTP_HOST} vnevremeni-club\.ru [NC]
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 # Короткие адреса серверной части. Сайт обращается к /booking, а не к
 # /booking.php — так адрес не завязан на язык, на котором это написано.
