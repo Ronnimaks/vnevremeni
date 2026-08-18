@@ -1,0 +1,68 @@
+# Сборка сайта и выкладка на хостинг.
+#
+# Запускается сама при любом изменении в ветке main — в том числе когда заказчица
+# нажимает «Сохранить» в личном кабинете: кабинет пишет правку прямо в репозиторий.
+# От нажатия до появления на сайте — около двух минут.
+#
+# Почему сборка здесь, а не на хостинге: сайт написан на React и его нужно собирать,
+# а на виртуальном хостинге Beget нет Node. Здесь он есть.
+#
+# Доступы лежат в секретах репозитория, в коде их нет:
+#   BEGET_SSH_KEY — закрытый ключ для входа на хостинг
+#   BEGET_HOST    — адрес сервера
+#   BEGET_USER    — логин
+#   BEGET_PATH    — куда класть файлы
+
+name: Сборка и выкладка сайта
+
+on:
+  push:
+    branches: [main]
+  # Позволяет запустить руками из вкладки Actions, если понадобится.
+  workflow_dispatch:
+
+# Если правки идут одна за другой, выкладываем только последнюю:
+# промежуточные версии на сайте никому не нужны.
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Забрать исходники
+        uses: actions/checkout@v4
+
+      - name: Поставить Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Собрать сайт
+        run: npm run build
+
+      - name: Подготовить ключ к хостингу
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.BEGET_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.BEGET_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Выложить на хостинг
+        run: |
+          rsync -rz --delete \
+            --exclude 'cgi-bin' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            dist/ "${{ secrets.BEGET_USER }}@${{ secrets.BEGET_HOST }}:${{ secrets.BEGET_PATH }}/"
+
+      - name: Проверить, что сайт отвечает
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://vnevremeni-club.ru/ || echo 000)
+          echo "Главная страница ответила: $code"
+          # Домен может ещё переезжать между хостингами, поэтому это не повод
+          # считать выкладку неудачной — просто отметка в журнале.
