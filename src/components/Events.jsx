@@ -180,7 +180,7 @@ export default function Events({ onBook }) {
                     </div>
                     <button
                       onClick={() => onBook(event)}
-                      className="sm:ml-auto px-8 py-3 border border-white/10 hover:border-poet-accent text-white hover:text-poet-accent bg-white/5 hover:bg-poet-accent/10 transition-all rounded text-sm font-medium uppercase tracking-wider"
+                      className="sm:ml-auto px-8 py-3 border border-white/10 hover:border-poet-accent text-white hover:text-poet-accent bg-white/5 hover:bg-poet-accent/10 transition rounded text-sm font-medium uppercase tracking-wider"
                     >
                       Купить билет
                     </button>
@@ -201,7 +201,7 @@ export default function Events({ onBook }) {
             role="dialog"
             aria-modal="true"
             aria-label={`Афиша: ${poster.title}`}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
             onClick={() => setPoster(null)}
           >
             <button

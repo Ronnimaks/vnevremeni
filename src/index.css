@@ -73,15 +73,43 @@
 }
 
 @layer components {
+  /* Ниже всюду `transition` вместо `transition-all`.
+     `all` заставляет браузер при каждом изменении сверять у элемента все
+     свойства подряд, включая те, что никогда не меняются. `transition` —
+     это короткий готовый список: цвет, фон, рамка, прозрачность, тень, сдвиг —
+     то есть ровно то, что мы и анимируем. */
   .btn-primary {
-    @apply px-6 py-3 bg-poet-accent text-poet-dark font-medium rounded-sm transition-all duration-300 hover:bg-[#d4b992] hover:shadow-[0_0_15px_rgba(200,169,126,0.4)] active:scale-95;
+    @apply px-6 py-3 bg-poet-accent text-poet-dark font-medium rounded-sm transition duration-300 hover:bg-[#d4b992] hover:shadow-[0_0_15px_rgba(200,169,126,0.4)] active:scale-95;
   }
   .btn-outline {
-    @apply px-6 py-3 border border-poet-accent text-poet-accent font-medium rounded-sm transition-all duration-300 hover:bg-poet-accent hover:text-poet-dark active:scale-95;
+    @apply px-6 py-3 border border-poet-accent text-poet-accent font-medium rounded-sm transition duration-300 hover:bg-poet-accent hover:text-poet-dark active:scale-95;
   }
-  
+
+  /* Карточка. Раньше здесь было «матовое стекло» — backdrop-blur.
+     На телефоне это дорого: браузер обязан заново размывать всё, что лежит
+     под карточкой, и делать это при каждой перерисовке. Таких карточек
+     на странице тринадцать.
+
+     При этом видно его не было: подложка и так закрывает фон на 80%,
+     а фон тёмный и однотонный. Убрали размытие, подняли плотность подложки —
+     внешне то же самое, работы для телефона на порядок меньше. */
   .glass-card {
-    @apply bg-poet-card/80 backdrop-blur-md border border-white/5 rounded-lg overflow-hidden transition-all duration-300 hover:border-poet-accent/30;
+    @apply bg-poet-card/90 border border-white/5 rounded-lg overflow-hidden transition-colors duration-300 hover:border-poet-accent/30;
+  }
+
+  /* Мягкое световое пятно на фоне.
+     Раньше это был круг, залитый цветом, поверх которого стояло размытие
+     радиусом до 120 пикселей. Размытие такого радиуса — самая дорогая
+     операция из всех: браузер считает каждую точку по огромной окрестности.
+     Радиальный переход выглядит так же, но рисуется один раз и почти даром. */
+  .svechenie {
+    background-image: radial-gradient(
+      closest-side,
+      rgba(200, 169, 126, 0.13),
+      rgba(200, 169, 126, 0.05) 45%,
+      transparent 78%
+    );
+    pointer-events: none;
   }
 
   /* Золотой перелив на заголовке. Раньше строка красилась приёмом «прозрачный

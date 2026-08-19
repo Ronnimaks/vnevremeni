@@ -58,7 +58,7 @@ export default function Formats() {
                   src={format.image} 
                   alt={format.imageAlt}
                   loading="lazy"
-                  className="w-full h-full object-cover [@media(hover:hover)]:grayscale group-hover:grayscale-0 transform group-hover:scale-105 transition-all duration-700"
+                  className="w-full h-full object-cover [@media(hover:hover)]:grayscale group-hover:grayscale-0 transform group-hover:scale-105 transition duration-700"
                 />
               </div>
               <div className="p-6 md:p-8 w-full md:w-3/5 flex flex-col justify-center">

@@ -62,7 +62,7 @@ export function SocialLinks({ links, size = 'md', className = '' }) {
             rel="noopener noreferrer"
             title={icon.label}
             aria-label={icon.label}
-            className={`${button} shrink-0 flex items-center justify-center rounded-full border border-white/15 text-poet-muted hover:text-poet-accent hover:border-poet-accent hover:-translate-y-0.5 transition-all duration-300`}
+            className={`${button} shrink-0 flex items-center justify-center rounded-full border border-white/15 text-poet-muted hover:text-poet-accent hover:border-poet-accent hover:-translate-y-0.5 transition duration-300`}
           >
             <SocialIcon type={link.type} className={iconSize} />
           </a>

@@ -5,7 +5,7 @@ export default function Founder() {
   return (
     <section className="py-24 bg-[#050505] relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute top-1/2 left-0 w-72 h-72 bg-poet-accent/5 rounded-full blur-[80px] -translate-y-1/2" />
+      <div className="svechenie absolute top-1/2 left-0 w-72 h-72 -translate-y-1/2" />
       
       <div className="container mx-auto px-4 md:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-16 max-w-6xl mx-auto">
@@ -51,13 +51,13 @@ export default function Founder() {
                   width="768"
                   height="1024"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover [@media(hover:hover)]:grayscale group-hover:grayscale-0 transition-all duration-700"
+                  className="absolute inset-0 w-full h-full object-cover [@media(hover:hover)]:grayscale group-hover:grayscale-0 transition duration-700"
                 />
               </div>
               
               {/* Плашка с именем. На узком экране не свешивается влево:
                   выступ в 24 пикселя выводил её за край телефона. */}
-              <div className="absolute -bottom-6 left-0 sm:-left-6 bg-poet-dark/90 backdrop-blur-md border border-poet-accent/30 p-4 rounded shadow-xl z-20">
+              <div className="absolute -bottom-6 left-0 sm:-left-6 bg-poet-dark/90 border border-poet-accent/30 p-4 rounded shadow-xl z-20">
                 <h4 className="font-serif font-bold text-white text-lg">Натали</h4>
                 <p className="text-poet-accent text-xs uppercase tracking-wider mt-1">Основатель, поэт и резидент</p>
               </div>

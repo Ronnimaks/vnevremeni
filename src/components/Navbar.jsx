@@ -22,7 +22,11 @@ export default function Navbar() {
   ];
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-poet-dark/95 backdrop-blur-md py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
+    // Шапка закреплена сверху и перерисовывается на каждом кадре прокрутки.
+    // «Матового стекла» здесь быть не должно: подложка и так закрывает фон
+    // на 95%, размытия не видно, а телефон из-за него пересчитывает картинку
+    // под шапкой всю дорогу, пока человек листает страницу.
+    <header className={`fixed top-0 left-0 right-0 z-50 transition duration-300 ${isScrolled ? 'bg-poet-dark/95 py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
       <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
         {/* Logo */}
         <a href="#" className="flex items-center gap-3 group">
@@ -52,7 +56,7 @@ export default function Navbar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden absolute top-full left-0 right-0 bg-poet-dark/95 backdrop-blur-md border-b border-white/5 py-4 px-4 flex flex-col gap-4 shadow-2xl"
+            className="md:hidden absolute top-full left-0 right-0 bg-poet-dark/95 border-b border-white/5 py-4 px-4 flex flex-col gap-4 shadow-2xl"
           >
             {navLinks.map((link) => (
               <a 

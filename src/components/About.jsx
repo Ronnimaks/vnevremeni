@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 export default function About() {
   return (
     <section id="about" className="py-24 bg-[#0a0a0c] relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-poet-accent/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="svechenie absolute top-0 right-0 w-[500px] h-[500px]" />
       
       <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-4xl mx-auto text-center">

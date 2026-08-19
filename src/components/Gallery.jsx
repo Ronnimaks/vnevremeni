@@ -191,7 +191,7 @@ export default function Gallery() {
             aria-modal="true"
             aria-label="Просмотр фотографии"
           >
-            <div onClick={close} className="absolute inset-0 bg-black/95 backdrop-blur-sm" />
+            <div onClick={close} className="absolute inset-0 bg-black/95" />
 
             <button
               ref={closeRef}

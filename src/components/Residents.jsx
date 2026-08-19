@@ -38,7 +38,7 @@ export default function Residents() {
                 src={resident.image}
                 alt={resident.name}
                 style={{ objectPosition: `center ${resident.imageFocus || '30%'}` }}
-                className="w-full h-full object-cover [@media(hover:hover)]:grayscale [@media(hover:hover)]:opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 transform group-hover:scale-110"
+                className="w-full h-full object-cover [@media(hover:hover)]:grayscale [@media(hover:hover)]:opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition duration-700 transform group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-poet-dark via-poet-dark/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
 

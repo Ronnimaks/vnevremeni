@@ -37,7 +37,7 @@ export default function Community() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="p-8 border border-poet-accent/20 bg-poet-accent/5 rounded-xl hover:bg-poet-accent/10 transition-colors group relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-poet-accent/10 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
+            <div className="svechenie absolute top-0 right-0 w-32 h-32 -translate-y-1/2 translate-x-1/2" />
             <Sparkles className="w-8 h-8 text-poet-accent mb-6 group-hover:scale-110 transition-transform relative z-10" />
             <h3 className="text-xl font-serif font-bold text-white mb-4 relative z-10">Поддержка экспериментов</h3>
             <p className="text-poet-light/90 text-sm leading-relaxed relative z-10">
