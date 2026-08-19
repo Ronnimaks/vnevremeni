@@ -11,7 +11,12 @@
       body { margin: 0; background: #1a1a1c; color: #e8e6e3;
              font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
       #zagruzka { max-width: 32rem; margin: 0 auto; padding: 4rem 1.5rem; line-height: 1.7; }
-      #zagruzka a { color: #d9b968; }
+      #zagruzka h1 { font-size: 1.7rem; margin: 0 0 1.2rem; }
+      #polosa { height: 6px; background: #2e2e31; border-radius: 3px; overflow: hidden; margin: 1.5rem 0 0.6rem; }
+      #polosa i { display: block; height: 100%; width: 0; background: #d9b968; transition: width .25s; }
+      #schet { color: #b9b5ae; font-size: 0.95rem; }
+      #zanovo { margin-top: 1.6rem; padding: 0.8rem 1.6rem; font-size: 1rem; color: #1a1a1c;
+                background: #d9b968; border: 0; border-radius: 4px; cursor: pointer; display: none; }
     </style>
   </head>
   <body>
@@ -23,57 +28,174 @@
       admin заслоном от ботов: вместо страницы отдаётся пустой лист, который
       пытается поставить пометку в браузере и перезагрузиться. Там, где пометка
       не приживается — а во встроенном браузере Telegram это обычное дело, —
-      получается вечная перезагрузка и белый экран. Кабинет просто не открывался.
+      получается вечная перезагрузка и белый экран.
 
-      Код кабинета лежит рядом, а не тянется с зарубежной площадки. Раньше он
-      грузился с unpkg.com — почти два мегабайта из-за границы, у российских
-      провайдеров такое доезжает через раз. Шрифты и значки забраны туда же.
+      Код редактора приезжает не одним куском, а восемью. Замер показал: с
+      телефона заказчицы файлы до ста килобайт доходят стабильно, а файл на
+      шестьсот килобайт не доходил ни разу, хотя сам сайт открывался. Разница
+      была только в размере куска.
     -->
     <div id="zagruzka">
       <h1>Личный кабинет</h1>
-      <p>Загружаем… Если через полминуты ничего не появилось — обновите страницу.</p>
-      <p>Не открывается совсем? Напишите в <a href="https://t.me/Ronnimaks">Telegram</a>.</p>
-      <noscript>
-        <p>Для работы кабинета нужен включённый JavaScript.</p>
-      </noscript>
+      <p id="poyasnenie">Загружаем редактор…</p>
+      <div id="polosa"><i></i></div>
+      <p id="schet"></p>
+      <button type="button" id="zanovo">Попробовать ещё раз</button>
     </div>
 
     <script>
-      // Перевод интерфейса кабинет тянет с зарубежной площадки unpkg.com.
-      // У российских провайдеров она открывается через раз, и кабинет
-      // встречал заказчицу английским интерфейсом и надписью об ошибке.
-      // Перехватываем такие обращения и отдаём файл, лежащий рядом.
-      const nastoyashchiyFetch = window.fetch.bind(window)
-      window.fetch = function (vhod, nastroyki) {
-        const adres = typeof vhod === 'string' ? vhod : (vhod && vhod.url) || ''
-        const perevod = adres.match(/unpkg\.com\/@sveltia\/cms@[^/]+\/locales\/(ru)\.json/)
-        if (perevod) return nastoyashchiyFetch('./locales/' + perevod[1] + '.json', nastroyki)
-        return nastoyashchiyFetch(vhod, nastroyki)
-      }
-    </script>
+      (function () {
+        var nachalo = Date.now();
 
-    <script src="./sveltia-cms.js"></script>
-    <script>
-      // Заставка убирается, когда кабинет нарисовал себя сам.
-      // Если код кабинета не доехал, заставка останется на экране
-      // и человек увидит объяснение, а не пустоту.
-      //
-      // Признак запуска — появление в теле страницы любого своего элемента,
-      // кроме нашей заставки и служебных тегов. Привязываться к имени класса
-      // нельзя: имена внутри кабинета меняются от версии к версии.
-      const zapustilsya = () =>
-        [...document.body.children].some(
-          (el) => el.id !== 'zagruzka' && !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName),
-        )
-
-      const nablyudatel = new MutationObserver(() => {
-        if (zapustilsya()) {
-          document.getElementById('zagruzka')?.remove()
-          nablyudatel.disconnect()
+        // --- маячок -------------------------------------------------------
+        // Кабинет сам рассказывает нам, чем закончилась загрузка. Иначе о его
+        // поломках мы узнаём только из чужих пересказов и скриншотов.
+        function soobshit(sobytie, soobsh, sboi) {
+          try {
+            var telo = JSON.stringify({
+              sobytie: sobytie,
+              soobsh: soobsh || '',
+              adres: location.href,
+              sboi: sboi || [],
+              ms: Date.now() - nachalo,
+              ekran: screen.width + 'x' + screen.height
+            });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon('/mayak', new Blob([telo], { type: 'application/json' }));
+            } else {
+              fetch('/mayak', { method: 'POST', body: telo, keepalive: true });
+            }
+          } catch (e) { /* маячок не имеет права мешать кабинету */ }
         }
-      })
-      nablyudatel.observe(document.body, { childList: true })
-      setTimeout(() => nablyudatel.disconnect(), 60000)
+        soobshit('kabinet-otkryt', '');
+
+        // --- перевод интерфейса -------------------------------------------
+        // Редактор тянет его с зарубежной площадки unpkg.com, откуда он
+        // доезжает через раз. Отдаём файл, лежащий рядом с сайтом.
+        var nastoyashchiyFetch = window.fetch.bind(window);
+        window.fetch = function (vhod, nastroyki) {
+          var adres = typeof vhod === 'string' ? vhod : (vhod && vhod.url) || '';
+          var perevod = adres.match(/unpkg\.com\/@sveltia\/cms@[^/]+\/locales\/(ru)\.json/);
+          if (perevod) return nastoyashchiyFetch('./locales/' + perevod[1] + '.json', nastroyki);
+          return nastoyashchiyFetch(vhod, nastroyki);
+        };
+
+        // --- показ хода загрузки ------------------------------------------
+        var polosa = document.querySelector('#polosa i');
+        var schet = document.getElementById('schet');
+        var poyasnenie = document.getElementById('poyasnenie');
+        var knopka = document.getElementById('zanovo');
+
+        function pokazat(gotovo, vsego) {
+          if (polosa) polosa.style.width = Math.round((gotovo / vsego) * 100) + '%';
+          if (schet) schet.textContent = 'Получено ' + gotovo + ' из ' + vsego + ' частей';
+        }
+
+        function sdalis(prichina, sboi) {
+          if (poyasnenie) {
+            poyasnenie.textContent =
+              'Не получилось загрузить редактор. Обычно помогает вторая попытка — ' +
+              'связь могла оборваться на середине.';
+          }
+          if (schet) schet.textContent = '';
+          if (polosa) polosa.parentElement.style.display = 'none';
+          if (knopka) knopka.style.display = 'inline-block';
+          soobshit('kabinet-ne-zagruzilsya', prichina, sboi);
+        }
+
+        if (knopka) knopka.onclick = function () { location.reload(); };
+
+        // --- загрузка кусками ---------------------------------------------
+        // Каждый кусок — короткий запрос примерно на восемьдесят килобайт.
+        // Сорвался один — повторяем только его, а не всю загрузку.
+        function vzyat(adres, popytok) {
+          popytok = popytok || 3;
+          return nastoyashchiyFetch(adres, { cache: 'force-cache' })
+            .then(function (o) {
+              if (!o.ok) throw new Error('код ' + o.status);
+              return o.arrayBuffer();
+            })
+            .catch(function (e) {
+              if (popytok <= 1) throw e;
+              return new Promise(function (r) { setTimeout(r, 700); })
+                .then(function () { return vzyat(adres, popytok - 1); });
+            });
+        }
+
+        function zapustit(bufery) {
+          var blob = new Blob(bufery, { type: 'text/javascript' });
+          var ssylka = URL.createObjectURL(blob);
+          var s = document.createElement('script');
+          s.src = ssylka;
+          s.onerror = function () { sdalis('склеенный код не запустился'); };
+          document.body.appendChild(s);
+        }
+
+        function celikom() {
+          // Запасной ход: если с кусками что-то пошло не так, пробуем
+          // забрать редактор одним файлом — как было раньше.
+          var s = document.createElement('script');
+          s.src = './sveltia-cms.js';
+          s.onerror = function () { sdalis('не доехал и целиком'); };
+          document.body.appendChild(s);
+        }
+
+        nastoyashchiyFetch('./chasti/opis.json', { cache: 'no-cache' })
+          .then(function (o) { return o.json(); })
+          .then(function (opis) {
+            var vsego = opis.chasti.length;
+            var gotovo = 0;
+            pokazat(0, vsego);
+
+            return Promise.all(
+              opis.chasti.map(function (imya) {
+                return vzyat('./chasti/' + imya).then(function (b) {
+                  gotovo++;
+                  pokazat(gotovo, vsego);
+                  return b;
+                });
+              })
+            );
+          })
+          .then(function (bufery) {
+            zapustit(bufery);
+          })
+          .catch(function (e) {
+            soobshit('kabinet-kuski-ne-doehali', String(e && e.message || e));
+            celikom();
+          });
+
+        // --- когда редактор запустился ------------------------------------
+        // Признак — появление в теле страницы своего элемента. Привязываться
+        // к имени класса нельзя: имена внутри редактора меняются от версии
+        // к версии.
+        function zapustilsya() {
+          var deti = document.body.children;
+          for (var i = 0; i < deti.length; i++) {
+            var el = deti[i];
+            if (el.id === 'zagruzka') continue;
+            if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'LINK') continue;
+            return true;
+          }
+          return false;
+        }
+
+        var nablyudatel = new MutationObserver(function () {
+          if (zapustilsya()) {
+            var z = document.getElementById('zagruzka');
+            if (z) z.remove();
+            nablyudatel.disconnect();
+            soobshit('kabinet-zapustilsya', '');
+          }
+        });
+        nablyudatel.observe(document.body, { childList: true });
+
+        // Через сорок секунд подводим итог: если редактора на экране нет,
+        // человек должен увидеть кнопку, а мы — запись в журнале.
+        setTimeout(function () {
+          if (!zapustilsya()) sdalis('редактор не появился за 40 с');
+        }, 40000);
+      })();
     </script>
   </body>
 </html>
