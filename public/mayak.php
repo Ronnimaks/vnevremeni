@@ -76,7 +76,14 @@ function mayak_slishkom_chasto(string $ip): bool
 function mayak_v_telegram(string $text): void
 {
     $config = club_secrets();
-    if (empty($config['TELEGRAM_BOT_TOKEN']) || empty($config['TELEGRAM_CHAT_ID'])) {
+
+    // Технические сообщения идут ОТДЕЛЬНЫМ адресатом — разработчику, не заказчице.
+    // TELEGRAM_CHAT_ID — это переписка заказчицы, туда приходят заявки на брони,
+    // и засорять её сообщениями про недоехавшие файлы нельзя. Пока отдельный
+    // адресат не задан, в Telegram не уходит ничего: запись всё равно ложится
+    // в журнал, и мы её увидим.
+    $komu = $config['TELEGRAM_DEV_CHAT_ID'] ?? '';
+    if (empty($config['TELEGRAM_BOT_TOKEN']) || $komu === '') {
         return;
     }
 
@@ -88,7 +95,7 @@ function mayak_v_telegram(string $text): void
     @file_put_contents($metka, (string) $now);
 
     $payload = json_encode([
-        'chat_id'                  => $config['TELEGRAM_CHAT_ID'],
+        'chat_id'                  => $komu,
         'text'                     => $text,
         'parse_mode'               => 'HTML',
         'disable_web_page_preview' => true,

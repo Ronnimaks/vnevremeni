@@ -38,6 +38,20 @@
       </noscript>
     </div>
 
+    <script>
+      // Перевод интерфейса кабинет тянет с зарубежной площадки unpkg.com.
+      // У российских провайдеров она открывается через раз, и кабинет
+      // встречал заказчицу английским интерфейсом и надписью об ошибке.
+      // Перехватываем такие обращения и отдаём файл, лежащий рядом.
+      const nastoyashchiyFetch = window.fetch.bind(window)
+      window.fetch = function (vhod, nastroyki) {
+        const adres = typeof vhod === 'string' ? vhod : (vhod && vhod.url) || ''
+        const perevod = adres.match(/unpkg\.com\/@sveltia\/cms@[^/]+\/locales\/(ru)\.json/)
+        if (perevod) return nastoyashchiyFetch('./locales/' + perevod[1] + '.json', nastroyki)
+        return nastoyashchiyFetch(vhod, nastroyki)
+      }
+    </script>
+
     <script src="./sveltia-cms.js"></script>
     <script>
       // Заставка убирается, когда кабинет нарисовал себя сам.

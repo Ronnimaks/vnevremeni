@@ -37,6 +37,9 @@ function club_secrets(): array
     $names = [
         'TELEGRAM_BOT_TOKEN',
         'TELEGRAM_CHAT_ID',
+        // Отдельная переписка для технических сообщений — разработчику.
+        // Заявки на брони идут заказчице, поломки не должны попадать туда же.
+        'TELEGRAM_DEV_CHAT_ID',
         'GITHUB_CLIENT_ID',
         'GITHUB_CLIENT_SECRET',
     ];
