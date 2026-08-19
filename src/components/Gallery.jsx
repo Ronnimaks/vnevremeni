@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 
 const photos = [
@@ -102,7 +102,7 @@ export default function Gallery() {
 
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
           {visible.map((item, index) => (
-            <motion.button
+            <m.button
               key={item.file}
               type="button"
               onClick={(e) => open(index, e)}
@@ -124,7 +124,7 @@ export default function Gallery() {
                 decoding="async"
                 className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
-            </motion.button>
+            </m.button>
           ))}
         </div>
 
@@ -144,7 +144,7 @@ export default function Gallery() {
               мельче вертикальных отзывов, хотя показывают куда больше. */}
           <div className="grid grid-cols-1 gap-8 max-w-4xl">
             {videos.map((video, index) => (
-              <motion.div
+              <m.div
                 key={video.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -173,7 +173,7 @@ export default function Gallery() {
                     Смотреть во ВКонтакте
                   </a>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function Gallery() {
 
       <AnimatePresence>
         {photo && (
-          <motion.div
+          <m.div
             key="lightbox"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -221,7 +221,7 @@ export default function Gallery() {
               <ChevronRight className="w-8 h-8 md:w-10 md:h-10" />
             </button>
 
-            <motion.figure
+            <m.figure
               key={photo.file}
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -241,8 +241,8 @@ export default function Gallery() {
                 {photo.alt}
                 <span className="block mt-1 text-poet-accent">{current + 1} / {shown}</span>
               </figcaption>
-            </motion.figure>
-          </motion.div>
+            </m.figure>
+          </m.div>
         )}
       </AnimatePresence>
     </section>

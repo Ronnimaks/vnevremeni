@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function Hero() {
   return (
@@ -20,7 +20,7 @@ export default function Hero() {
       </div>
 
       <div className="container mx-auto px-4 z-20 relative text-center">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -47,7 +47,7 @@ export default function Hero() {
               О клубе
             </a>
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Decorative gradient orb */}

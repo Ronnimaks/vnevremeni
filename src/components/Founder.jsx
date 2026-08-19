@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function Founder() {
   return (
@@ -11,7 +11,7 @@ export default function Founder() {
         <div className="flex flex-col lg:flex-row items-center gap-16 max-w-6xl mx-auto">
           
           {/* Text Section */}
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -31,10 +31,10 @@ export default function Founder() {
                 Резиденты клуба — это не только поэты и вокалисты, но и продюсеры, сонграйтеры, авторы проектов: они не просто выступают, а формируют среду — помогают друг другу, пишут музыку на стихи, запускают лейблы и школы, продюсируют новые имена.
               </p>
             </div>
-          </motion.div>
+          </m.div>
           
           {/* Photo Section */}
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -62,7 +62,7 @@ export default function Founder() {
                 <p className="text-poet-accent text-xs uppercase tracking-wider mt-1">Основатель, поэт и резидент</p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
           
         </div>
       </div>

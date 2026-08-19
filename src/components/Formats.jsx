@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Mic2, Music, Map, Star } from 'lucide-react';
 
 const formats = [
@@ -44,7 +44,7 @@ export default function Formats() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {formats.map((format, index) => (
-            <motion.div 
+            <m.div 
               key={index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export default function Formats() {
                   {format.description}
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

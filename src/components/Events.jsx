@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Clock, Users, Info, X } from 'lucide-react';
 // Файл лежит объектом с ключом events, а не голым списком: этого требует
 // личный кабинет — он умеет править только именованные поля файла.
@@ -96,7 +96,7 @@ export default function Events({ onBook }) {
         ) : (
           <div className="space-y-8">
             {upcoming.map((event, index) => (
-              <motion.article
+              <m.article
                 key={event.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -186,7 +186,7 @@ export default function Events({ onBook }) {
                     </button>
                   </div>
                 </div>
-              </motion.article>
+              </m.article>
             ))}
           </div>
         )}
@@ -194,7 +194,7 @@ export default function Events({ onBook }) {
 
       <AnimatePresence>
         {poster && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -217,7 +217,7 @@ export default function Events({ onBook }) {
               onClick={(e) => e.stopPropagation()}
               className="max-h-[90vh] max-w-full w-auto object-contain rounded-lg shadow-2xl"
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </section>

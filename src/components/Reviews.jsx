@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Quote } from 'lucide-react';
 
 // Ссылки на соцсети под отзывами пока не показываем: Instagram есть только
@@ -61,7 +61,7 @@ export default function Reviews() {
             ставим отзывы рядом, тогда оба видно сразу. */}
         <div className="grid grid-cols-2 gap-4 md:gap-10 max-w-3xl mx-auto justify-items-center">
           {reviews.map((review, index) => (
-            <motion.div
+            <m.div
               key={review.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export default function Reviews() {
               className="w-full max-w-sm h-full"
             >
               <VideoReview review={review} />
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

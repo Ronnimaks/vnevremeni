@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 export default function About() {
   return (
@@ -8,7 +8,7 @@ export default function About() {
       
       <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -32,7 +32,7 @@ export default function About() {
                 В основе клуба — атмосфера творческого единения, где каждый голос важен, а каждая строчка может стать началом большой истории.
               </p>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

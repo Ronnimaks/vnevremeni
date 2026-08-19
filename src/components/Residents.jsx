@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 // Файл лежит объектом с ключом residents, а не голым списком: этого требует
 // личный кабинет — он умеет править только именованные поля файла.
@@ -20,7 +20,7 @@ export default function Residents() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
           {residents.map((resident, index) => (
-            <motion.div
+            <m.div
               key={resident.name}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -49,7 +49,7 @@ export default function Residents() {
                   Подробнее <span className="text-poet-accent">→</span>
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function Residents() {
       <AnimatePresence>
         {selectedResident && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -66,7 +66,7 @@ export default function Residents() {
               className="absolute inset-0 bg-black/80 backdrop-blur-md"
             />
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -102,7 +102,7 @@ export default function Residents() {
 
                 <SocialLinks links={selectedResident.socials} size="md" className="mt-8" />
               </div>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

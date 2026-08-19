@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Heart, Sparkles, Users } from 'lucide-react';
 
 export default function Community() {
@@ -16,7 +16,7 @@ export default function Community() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -28,9 +28,9 @@ export default function Community() {
             <p className="text-poet-muted text-sm leading-relaxed">
               Многие резиденты начинали с открытого микрофона, а потом становились частью команды. Мы ценим не только готовое мастерство, но и сам путь автора.
             </p>
-          </motion.div>
+          </m.div>
 
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -43,9 +43,9 @@ export default function Community() {
             <p className="text-poet-light/90 text-sm leading-relaxed relative z-10">
               Смешение жанров, неожиданные аранжировки, театральные интонации и визуальные элементы — мы приветствуем всё, что помогает автору раскрыться.
             </p>
-          </motion.div>
+          </m.div>
 
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -57,7 +57,7 @@ export default function Community() {
             <p className="text-poet-muted text-sm leading-relaxed">
               Главное, что мы сохраняем. В каждом нашем вечере есть место для тёплых слов, искренних воспоминаний и благодарности тем, кто пришёл послушать.
             </p>
-          </motion.div>
+          </m.div>
 
         </div>
       </div>

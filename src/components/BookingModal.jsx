@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, Info, AlertCircle, AlertTriangle, CheckCircle, Copy, Check, Loader2, Send } from 'lucide-react';
 import payment from '../data/payment.json';
 import { submitBooking, newBookingId } from '../lib/booking';
@@ -276,7 +276,7 @@ export default function BookingModal({ event, isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -284,7 +284,7 @@ export default function BookingModal({ event, isOpen, onClose }) {
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
 
-          <motion.div
+          <m.div
             ref={dialogRef}
             tabIndex={-1}
             role="dialog"
@@ -406,7 +406,7 @@ export default function BookingModal({ event, isOpen, onClose }) {
               )}
 
               {step === 2 && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+                <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                   <div className="bg-black/40 border border-white/5 rounded-lg p-5 text-center">
                     <p className="text-xs font-medium text-poet-muted mb-2 uppercase tracking-wider">К переводу</p>
                     <p className="text-4xl font-bold text-white mb-3">{totalLabel} ₽</p>
@@ -476,11 +476,11 @@ export default function BookingModal({ event, isOpen, onClose }) {
                   <button onClick={() => setStep(1)} className="w-full py-3 text-poet-muted hover:text-white transition-colors text-sm font-medium">
                     Изменить данные
                   </button>
-                </motion.div>
+                </m.div>
               )}
 
               {step === 3 && (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+                <m.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                   <CheckCircle className="w-14 h-14 text-poet-accent mx-auto mb-5" />
                   <h4 className="text-2xl font-serif font-bold text-white mb-3">Заявка принята</h4>
                   <p className="text-poet-muted text-sm leading-relaxed mb-6">
@@ -515,10 +515,10 @@ export default function BookingModal({ event, isOpen, onClose }) {
                   <button onClick={resetAndClose} className="btn-outline">
                     Закрыть
                   </button>
-                </motion.div>
+                </m.div>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>
