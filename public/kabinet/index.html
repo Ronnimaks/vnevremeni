@@ -43,13 +43,22 @@
       // Заставка убирается, когда кабинет нарисовал себя сам.
       // Если код кабинета не доехал, заставка останется на экране
       // и человек увидит объяснение, а не пустоту.
+      //
+      // Признак запуска — появление в теле страницы любого своего элемента,
+      // кроме нашей заставки и служебных тегов. Привязываться к имени класса
+      // нельзя: имена внутри кабинета меняются от версии к версии.
+      const zapustilsya = () =>
+        [...document.body.children].some(
+          (el) => el.id !== 'zagruzka' && !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName),
+        )
+
       const nablyudatel = new MutationObserver(() => {
-        if (document.querySelector('#nc-root, .sveltia-cms, [data-sveltia-cms]')) {
+        if (zapustilsya()) {
           document.getElementById('zagruzka')?.remove()
           nablyudatel.disconnect()
         }
       })
-      nablyudatel.observe(document.body, { childList: true, subtree: true })
+      nablyudatel.observe(document.body, { childList: true })
       setTimeout(() => nablyudatel.disconnect(), 60000)
     </script>
   </body>
