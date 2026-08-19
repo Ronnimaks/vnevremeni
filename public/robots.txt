@@ -3,6 +3,6 @@
 User-agent: *
 Allow: /
 Disallow: /privacy.html
-Disallow: /admin/
+Disallow: /kabinet/
 
 Sitemap: https://vnevremeni-club.ru/sitemap.xml

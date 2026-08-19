@@ -24,6 +24,75 @@
       body { margin: 0; background: #0f0f11; color: #e8e6e3; }
     </style>
 
+    <!--
+      Маячок. Страница сама рассказывает нам, что у неё не получилось.
+
+      Стоит здесь, выше всех остальных файлов, и по двум причинам сразу.
+      Во-первых, сообщения о том, что файл не доехал, до окна доходят только
+      если слушатель повешен раньше самого файла. Во-вторых, этот кусок работает
+      даже тогда, когда не приехало вообще ничего, кроме страницы, — а именно
+      этот случай нам и надо ловить.
+
+      Что уходит: событие, адрес страницы, список недоехавших файлов, сколько
+      прождали, размер экрана. Ни имён, ни телефонов, ни содержимого форм.
+      Складывается всё на нашем же сервере, выше корня сайта.
+    -->
+    <script>
+      (function () {
+        var sboi = [], nachalo = Date.now(), soobshcheno = false;
+
+        function soobshit(sobytie, soobsh) {
+          try {
+            var telo = JSON.stringify({
+              sobytie: sobytie,
+              soobsh: soobsh || '',
+              adres: location.href,
+              sboi: sboi,
+              ms: Date.now() - nachalo,
+              ekran: screen.width + 'x' + screen.height
+            });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon('/mayak', new Blob([telo], { type: 'application/json' }));
+            } else {
+              fetch('/mayak', { method: 'POST', body: telo, keepalive: true });
+            }
+          } catch (e) { /* маячок не имеет права мешать сайту */ }
+        }
+
+        // Страница дошла до устройства и скрипты на ней выполняются.
+        // Это и есть наш журнал посещений: журнала хостинга на этом тарифе нет.
+        soobshit('stranica-prishla', '');
+
+        // Сообщения о недоехавших файлах всплывают только в фазе перехвата.
+        window.addEventListener('error', function (e) {
+          var el = e.target;
+          if (el && (el.tagName === 'LINK' || el.tagName === 'SCRIPT' || el.tagName === 'IMG')) {
+            var adres = el.href || el.src || '';
+            if (sboi.length < 10) sboi.push(adres.replace(location.origin, ''));
+          } else if (e.message) {
+            soobshit('oshibka-js', e.message);
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason;
+          soobshit('oshibka-js', String((r && r.message) || r || ''));
+        });
+
+        // Главная проверка. Через восемь секунд приложение обязано быть на экране.
+        // Если его там нет — гость смотрит в пустоту, и мы хотим об этом знать
+        // сразу, а не через неделю из чужого пересказа.
+        setTimeout(function () {
+          if (soobshcheno) return;
+          var root = document.getElementById('root');
+          if (!root || root.childElementCount === 0) {
+            soobshcheno = true;
+            soobshit('belyj-ekran', 'приложение не нарисовалось за 8 с');
+          }
+        }, 8000);
+      })();
+    </script>
+
     <link rel="canonical" href="https://vnevremeni-club.ru/" />
 
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />

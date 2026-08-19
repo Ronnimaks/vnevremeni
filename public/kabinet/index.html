@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Личный кабинет — клуб «Вне времени»</title>
+    <link rel="icon" type="image/webp" href="../images/logo.webp" />
+    <style>
+      html { background: #1a1a1c; color-scheme: dark; }
+      body { margin: 0; background: #1a1a1c; color: #e8e6e3;
+             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+      #zagruzka { max-width: 32rem; margin: 0 auto; padding: 4rem 1.5rem; line-height: 1.7; }
+      #zagruzka a { color: #d9b968; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Личный кабинет: правки сохраняются прямо в хранилище сайта, после чего
+      сайт пересобирается сам. Базы данных нет — ломаться нечему.
+
+      Адрес именно «kabinet», а не «admin». Хостинг закрывает все пути с именем
+      admin заслоном от ботов: вместо страницы отдаётся пустой лист, который
+      пытается поставить пометку в браузере и перезагрузиться. Там, где пометка
+      не приживается — а во встроенном браузере Telegram это обычное дело, —
+      получается вечная перезагрузка и белый экран. Кабинет просто не открывался.
+
+      Код кабинета лежит рядом, а не тянется с зарубежной площадки. Раньше он
+      грузился с unpkg.com — почти два мегабайта из-за границы, у российских
+      провайдеров такое доезжает через раз. Шрифты и значки забраны туда же.
+    -->
+    <div id="zagruzka">
+      <h1>Личный кабинет</h1>
+      <p>Загружаем… Если через полминуты ничего не появилось — обновите страницу.</p>
+      <p>Не открывается совсем? Напишите в <a href="https://t.me/Ronnimaks">Telegram</a>.</p>
+      <noscript>
+        <p>Для работы кабинета нужен включённый JavaScript.</p>
+      </noscript>
+    </div>
+
+    <script src="./sveltia-cms.js"></script>
+    <script>
+      // Заставка убирается, когда кабинет нарисовал себя сам.
+      // Если код кабинета не доехал, заставка останется на экране
+      // и человек увидит объяснение, а не пустоту.
+      const nablyudatel = new MutationObserver(() => {
+        if (document.querySelector('#nc-root, .sveltia-cms, [data-sveltia-cms]')) {
+          document.getElementById('zagruzka')?.remove()
+          nablyudatel.disconnect()
+        }
+      })
+      nablyudatel.observe(document.body, { childList: true, subtree: true })
+      setTimeout(() => nablyudatel.disconnect(), 60000)
+    </script>
+  </body>
+</html>
